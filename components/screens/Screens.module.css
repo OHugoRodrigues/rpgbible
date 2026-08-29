@@ -1,0 +1,1599 @@
+/* ==========================================================================
+   Telas do vertical slice. A sequência é a da spec §11:
+   home → pilgrim → journeys → chapters → discovery → preparation → ar →
+   quiz → result → profile
+   ========================================================================== */
+
+/* --- Shell --------------------------------------------------------------- */
+
+.world {
+  position: relative;
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, #4a2f1666, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 10% 100%, #ff8c1a14, transparent 70%),
+    linear-gradient(160deg, var(--wood-800), var(--wood-900) 62%);
+}
+
+/* Veios da madeira do tampo de mesa */
+.world::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    91deg,
+    #00000000 0 22px,
+    #00000024 22px 24px,
+    #00000000 24px 58px,
+    #ffffff08 58px 59px
+  );
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+}
+
+/* Luz de vela vinda do canto, como na ref/1.png */
+.candle {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 46% 34% at 88% 8%, #ffb34724, transparent 62%);
+  animation: peregrino-flicker 7s ease-in-out infinite;
+}
+
+.screen {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: calc(78px + env(safe-area-inset-top)) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+  animation: peregrino-rise var(--duration-base) var(--ease-out);
+}
+
+.screenBare {
+  padding-top: calc(var(--space-5) + env(safe-area-inset-top));
+}
+
+.screenHeader {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.screenHeaderText h1 {
+  font-size: var(--size-3xl);
+  color: var(--paper-100);
+  text-shadow: 0 4px 18px #000000a6;
+}
+
+.screenIntro {
+  max-width: 62ch;
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--size-sm);
+}
+
+.backButton {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: var(--surface-panel);
+  color: var(--paper-200);
+  transition: border-color var(--duration-fast), transform var(--duration-fast);
+}
+
+.backButton:hover {
+  border-color: var(--gold-300);
+  transform: translateX(-2px);
+}
+
+.backButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.screenActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-6);
+}
+
+.centered {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* --- Home ---------------------------------------------------------------- */
+
+.home {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: 100svh;
+  background: var(--wood-900);
+}
+
+.homeCover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.94) contrast(1.06);
+}
+
+.homeShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #05070a00 24%, #0d080599 56%, #0d0805fa 92%),
+    radial-gradient(circle at 50% 40%, transparent 6%, #0d080573 100%);
+}
+
+.homeCopy {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 640px);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.homeCopy h1 {
+  margin: var(--space-3) 0;
+  font-size: var(--size-4xl);
+  color: var(--paper-100);
+  letter-spacing: 0.02em;
+  text-shadow: 0 6px 30px #000, 0 0 60px #ff8c1a3d;
+}
+
+.homeCopy p {
+  max-width: 46ch;
+  margin: 0 auto var(--space-5);
+  color: var(--paper-300);
+  font-size: var(--size-lg);
+}
+
+.homeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.homeMeta span {
+  padding: 5px var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-pill);
+  background: #0d0805a6;
+  color: var(--paper-300);
+  font-size: var(--size-2xs);
+  font-weight: 600;
+}
+
+.textLink {
+  display: block;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: var(--size-sm);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.textLink:hover {
+  color: var(--gold-200);
+}
+
+/* --- Peregrino (US02) ---------------------------------------------------- */
+
+.pilgrim {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.pilgrimStage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 300px;
+  border-radius: var(--radius-xl);
+  background: radial-gradient(ellipse 60% 55% at 50% 60%, #4a2f1666, transparent 68%);
+}
+
+.pilgrimGlow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f3bd5926, transparent 66%);
+  animation: peregrino-pulse 3.4s ease-in-out infinite;
+}
+
+.pilgrimStage img {
+  position: relative;
+  z-index: 1;
+  width: min(64vw, 300px);
+  height: min(46svh, 420px);
+  object-fit: contain;
+  object-position: center top;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 18px 22px #000000cc);
+}
+
+.pilgrimStage::after {
+  content: '';
+  position: absolute;
+  bottom: 6%;
+  width: 190px;
+  height: 34px;
+  border-radius: 50%;
+  background: #000000b3;
+  filter: blur(9px);
+}
+
+.pilgrimControls {
+  display: grid;
+  gap: var(--space-4);
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.controlGroup {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.controlLabel {
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+/* Rádios reais, visualmente escondidos, com o label como superfície */
+.segmented input,
+.swatches input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented label {
+  display: grid;
+  place-items: center;
+  min-height: 46px;
+  padding: var(--space-2);
+  border-radius: calc(var(--radius-md) - 5px);
+  color: var(--text-muted);
+  font-size: var(--size-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.segmented input:checked + label {
+  background: linear-gradient(180deg, var(--gold-200), var(--gold-400));
+  color: var(--text-on-gold);
+  box-shadow: var(--shadow-sm);
+}
+
+.segmented input:focus-visible + label,
+.swatches input:focus-visible + label {
+  outline: 3px solid var(--ice-300);
+  outline-offset: 2px;
+}
+
+.swatches {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.swatches label {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--hairline-strong);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--duration-fast);
+}
+
+.swatches label:hover {
+  transform: scale(1.08);
+}
+
+.swatches input:checked + label {
+  outline: 2px solid var(--gold-200);
+  outline-offset: 3px;
+}
+
+.swatches > span {
+  position: relative;
+  display: block;
+}
+
+.swatchSand {
+  background: linear-gradient(140deg, #6b5c42, #ab9270);
+}
+.swatchBlue {
+  background: linear-gradient(140deg, #1d3f6b, #d8a53c);
+}
+
+/* --- Calibração ---------------------------------------------------------- */
+
+.calibration {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  width: min(100%, 780px);
+  margin: 0 auto;
+}
+
+.calibrationProgress {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 auto var(--space-6);
+}
+
+.calibrationProgress i {
+  width: 34px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: #ffffff1c;
+  transition: background var(--duration-base);
+}
+
+.calibrationProgress i[data-done='true'] {
+  background: linear-gradient(90deg, var(--ice-400), var(--gold-300));
+  box-shadow: var(--glow-gold);
+}
+
+.dialogue {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.dialogue > img {
+  width: 130px;
+  height: 140px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 22px #9cecff59);
+  animation: peregrino-float 3.6s ease-in-out infinite;
+}
+
+.dialogueBody {
+  position: relative;
+  padding: var(--space-5);
+  border: 1px solid #9cecff40;
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px;
+  background: linear-gradient(145deg, #16303fe8, #101a24ed);
+  box-shadow: var(--shadow-md);
+}
+
+.dialogueBody h2 {
+  margin-bottom: var(--space-2);
+  font-size: var(--size-xl);
+  color: var(--paper-100);
+}
+
+.dialogueBody > p {
+  color: #a9bcc4;
+  font-size: var(--size-sm);
+}
+
+.choices {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.choices button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: #17202bcc;
+  color: var(--paper-200);
+  text-align: left;
+  transition: transform var(--duration-fast), border-color var(--duration-fast);
+}
+
+.choices button:hover {
+  transform: translateX(4px);
+  border-color: var(--gold-300);
+}
+
+.choices span {
+  display: grid;
+  gap: 2px;
+}
+
+.choices strong {
+  font-size: var(--size-md);
+}
+
+.choices small {
+  color: var(--text-muted);
+  font-size: var(--size-2xs);
+}
+
+.choices svg {
+  width: 18px;
+  flex: none;
+  color: var(--gold-300);
+}
+
+.privacyNote {
+  display: block;
+  max-width: 56ch;
+  margin: var(--space-5) auto 0;
+  color: var(--text-muted);
+  font-size: var(--size-2xs);
+  text-align: center;
+}
+
+/* --- Universo de Jornadas (US03/US04) ------------------------------------ */
+
+.journeyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.journeyCard {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.journeyCard:not(:disabled):hover {
+  transform: translateY(-4px);
+}
+
+.journeyInner {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: linear-gradient(165deg, #2a1c0eec, #140d06f2);
+}
+
+.journeyEmblem {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, #4a2f16, #150d06 72%);
+  box-shadow: inset 0 0 0 1px #f3bd591f, inset 0 -12px 24px #00000073;
+}
+
+.journeyEmblem svg {
+  width: 62%;
+  height: 62%;
+  filter: drop-shadow(0 3px 6px #000000a6);
+}
+
+.journeyName {
+  font-family: var(--font-display);
+  font-size: var(--size-lg);
+  font-weight: 900;
+  color: var(--paper-100);
+  letter-spacing: 0.02em;
+}
+
+.journeyTheme {
+  color: var(--gold-300);
+  font-size: var(--size-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.journeyStatus {
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--size-2xs);
+}
+
+.journeyCard[data-available='true'] .journeyEmblem {
+  background: radial-gradient(ellipse 70% 60% at 50% 40%, #6b451f, #241609 72%);
+  box-shadow: inset 0 0 0 1px #f3bd5947, inset 0 -12px 24px #00000073, 0 0 28px #f3bd5926;
+}
+
+.journeyFootnote {
+  margin-top: var(--space-5);
+  color: var(--text-muted);
+  font-size: var(--size-xs);
+  text-align: center;
+}
+
+/* --- Capítulos de Davi (US05) -------------------------------------------- */
+
+.chapterList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.chapterCard {
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: none;
+  color: var(--paper-200);
+  text-align: left;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.chapterCard:not(:disabled):hover {
+  transform: translateX(5px);
+}
+
+.chapterNumber {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 2px solid var(--gold-400);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, #4a2f16, #140d06);
+  color: var(--gold-200);
+  font-family: var(--font-display);
+  font-size: var(--size-xl);
+  font-weight: 900;
+  box-shadow: inset 0 0 12px #00000099, 0 0 0 5px #0d080580;
+}
+
+.chapterCard[data-state='complete'] .chapterNumber {
+  border-color: var(--ice-400);
+  color: var(--ice-300);
+  box-shadow: inset 0 0 12px #00000099, 0 0 0 5px #0d080580, 0 0 18px #57d4e759;
+}
+
+.chapterText {
+  display: grid;
+  gap: 3px;
+}
+
+.chapterText strong {
+  font-family: var(--font-display);
+  font-size: var(--size-lg);
+  font-weight: 900;
+  color: var(--paper-100);
+}
+
+.chapterText small {
+  color: var(--text-secondary);
+  font-size: var(--size-xs);
+  line-height: 1.45;
+}
+
+.playableTag {
+  padding: 5px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--gold-200), var(--gold-400));
+  color: var(--text-on-gold);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--glow-gold);
+}
+
+.chapterCardLocked {
+  opacity: 0.42;
+  filter: grayscale(0.8);
+  cursor: not-allowed;
+}
+
+.chapterProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.chapterProgressBar {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: #ffffff14;
+  overflow: hidden;
+}
+
+.chapterProgressBar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ice-400), var(--gold-300));
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.chapterProgressLabel {
+  color: var(--gold-200);
+  font-family: var(--font-pixel);
+  font-size: var(--size-2xs);
+  white-space: nowrap;
+}
+
+/* --- Descoberta (US06) --------------------------------------------------- */
+
+.hotspot {
+  position: absolute;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--gold-200);
+  border-radius: 50%;
+  background: #0d0805cc;
+  color: var(--gold-200);
+  box-shadow: 0 0 0 6px #f3bd5921, var(--shadow-sm);
+  transition: transform var(--duration-fast);
+}
+
+.hotspot::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--gold-300);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: peregrino-pulse 2.2s ease-in-out infinite;
+}
+
+.hotspot:hover {
+  transform: translate(0, -3px) scale(1.06);
+}
+
+.hotspot svg {
+  width: 19px;
+  height: 19px;
+}
+
+.hotspotFound {
+  border-color: var(--ice-300);
+  color: var(--ice-200);
+  box-shadow: 0 0 0 6px #9cecff21, var(--glow-ice);
+}
+
+.hotspotFound::after {
+  animation: none;
+  opacity: 0.25;
+}
+
+.discoveryTally {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.discoveryTally i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff1f;
+  transition: background var(--duration-base);
+}
+
+.discoveryTally i[data-done='true'] {
+  background: var(--gold-300);
+  box-shadow: var(--glow-gold);
+}
+
+.discoveryTally span {
+  margin-left: var(--space-2);
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-size: var(--size-2xs);
+}
+
+/* Cartucho de microconteúdo que abre ao tocar um elemento da cena */
+.reveal {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  animation: peregrino-rise var(--duration-base) var(--ease-out);
+}
+
+.revealTitle {
+  font-family: var(--font-display);
+  font-size: var(--size-xl);
+  font-weight: 900;
+  color: var(--ink-900);
+}
+
+.revealBody {
+  color: var(--ink-700);
+  font-size: var(--size-sm);
+  line-height: 1.6;
+}
+
+/* --- Preparação (US07) --------------------------------------------------- */
+
+.loadoutGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.loadoutItem {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--paper-200);
+  transition: transform var(--duration-fast);
+}
+
+.loadoutItem:not(:disabled):hover {
+  transform: translateY(-3px);
+}
+
+.loadoutFace {
+  display: grid;
+  gap: var(--space-2);
+  place-items: center;
+  padding: var(--space-3);
+  background: linear-gradient(165deg, #26190dee, #120c06f2);
+}
+
+.loadoutArt {
+  width: 64px;
+  height: 64px;
+}
+
+.loadoutItem strong {
+  font-size: var(--size-sm);
+  text-align: center;
+}
+
+.loadoutChosen .loadoutFace {
+  background: linear-gradient(165deg, #14343dee, #0d1f26f2);
+  box-shadow: inset 0 0 0 2px #57d4e766;
+}
+
+.loadoutRejected {
+  opacity: 0.34;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.feedback {
+  max-width: 60ch;
+  margin: var(--space-4) auto 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--gold-300);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: #d8992e1f;
+  color: var(--paper-300);
+  font-size: var(--size-sm);
+  line-height: 1.55;
+}
+
+.feedbackError {
+  border-left-color: var(--danger-500);
+  background: #ec62611f;
+}
+
+/* --- Quiz (US09) --------------------------------------------------------- */
+
+.quizProgress {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+
+.quizProgress i {
+  width: 40px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: #ffffff1c;
+}
+
+.quizProgress i[data-state='correct'] {
+  background: linear-gradient(90deg, var(--success-500), var(--success-300));
+}
+
+.quizProgress i[data-state='answered'] {
+  background: var(--gold-500);
+}
+
+.quizPrompt {
+  font-family: var(--font-display);
+  font-size: var(--size-2xl);
+  font-weight: 900;
+  color: var(--paper-100);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.quizOptions {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-5) 0;
+}
+
+.quizOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 62px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+  background: #17202bcc;
+  color: var(--paper-200);
+  font-size: var(--size-md);
+  text-align: left;
+  transition: transform var(--duration-fast), border-color var(--duration-fast);
+}
+
+.quizOption:not(:disabled):hover {
+  transform: translateX(4px);
+  border-color: var(--gold-300);
+}
+
+.quizOptionKey {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: 1px solid var(--gold-500);
+  border-radius: 50%;
+  color: var(--gold-200);
+  font-family: var(--font-pixel);
+  font-size: var(--size-2xs);
+}
+
+.quizOptionCorrect {
+  border-color: var(--success-500);
+  background: #7fb0691f;
+}
+
+.quizOptionCorrect .quizOptionKey {
+  border-color: var(--success-500);
+  color: var(--success-300);
+}
+
+.quizOptionWrong {
+  border-color: var(--danger-500);
+  background: #ec62611a;
+}
+
+/* --- Missão AR (US08) ---------------------------------------------------- */
+
+.arStage {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.arViewport {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+}
+
+.arViewport canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.arOverlay {
+  position: absolute;
+  z-index: 10;
+  inset: auto 0 0;
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  padding: var(--space-4);
+  background: linear-gradient(transparent, #0d0805e6 46%);
+}
+
+.arHint {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid #9cecff59;
+  border-radius: var(--radius-pill);
+  background: #07131cd9;
+  color: var(--ice-200);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+/* Confronto em DOM — usado quando o aparelho não suporta WebXR */
+.duel {
+  position: absolute;
+  inset: 0;
+}
+
+.goliath {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  translate: -50% 0;
+  width: 108px;
+  height: 200px;
+  filter: drop-shadow(0 14px 16px #000000cc);
+  transition: transform var(--duration-base) var(--ease-out), opacity var(--duration-slow);
+}
+
+.goliathHit {
+  transform: translate(-50%, 0) rotate(14deg) translateY(26px);
+  opacity: 0.25;
+}
+
+.david {
+  position: absolute;
+  bottom: 20%;
+  left: 16%;
+  width: 74px;
+  height: 130px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 12px #000000b3);
+}
+
+.stone {
+  position: absolute;
+  z-index: 4;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #dfe4e7, #6d757b);
+  box-shadow: 0 0 12px #ffffff73;
+}
+
+.aimTrack {
+  position: absolute;
+  z-index: 5;
+  left: 8%;
+  right: 8%;
+  bottom: 13%;
+  height: 20px;
+  border: 2px solid #ffffff2e;
+  border-radius: var(--radius-pill);
+  background: #06090dd9;
+  box-shadow: var(--shadow-sm);
+}
+
+.aimZone {
+  position: absolute;
+  top: 0;
+  left: 58%;
+  width: 20%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--gold-500), var(--gold-100), var(--gold-500));
+  box-shadow: var(--glow-gold);
+}
+
+.aimMarker {
+  position: absolute;
+  top: -7px;
+  width: 7px;
+  height: 30px;
+  translate: -50% 0;
+  border-radius: 3px;
+  background: var(--ice-300);
+  box-shadow: 0 0 14px var(--ice-300);
+}
+
+.throwButton {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 168px;
+  min-height: 60px;
+  border: 1px solid var(--gold-100);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, var(--gold-200), var(--gold-500));
+  color: var(--text-on-gold);
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  user-select: none;
+  touch-action: none;
+  box-shadow: var(--shadow-md), inset 0 1px #ffffffb3;
+}
+
+.throwButton small {
+  font-family: var(--font-body);
+  font-size: var(--size-3xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.throwCharging {
+  background: linear-gradient(180deg, var(--gold-100), var(--ember-500));
+  box-shadow: 0 0 0 8px #f3bd5921, var(--glow-ember);
+  animation: peregrino-pulse 0.55s ease-in-out infinite alternate;
+}
+
+/* --- Recompensa (US11/US12) ---------------------------------------------- */
+
+.rewardScene {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.rewardRays {
+  position: absolute;
+  width: min(120vw, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(#f3bd5914 0 6deg, transparent 6deg 17deg);
+  animation: peregrino-spin 30s linear infinite;
+  pointer-events: none;
+}
+
+.rewardPair {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  width: min(100%, 620px);
+  margin: var(--space-5) 0;
+}
+
+.rewardCard {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  text-align: left;
+  animation: peregrino-rise var(--duration-slow) var(--ease-out) both;
+}
+
+.rewardCard:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.rewardArt {
+  width: 92px;
+  height: 92px;
+}
+
+.rewardKind {
+  color: var(--gold-300);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.rewardName {
+  font-family: var(--font-display);
+  font-size: var(--size-xl);
+  font-weight: 900;
+  color: var(--paper-100);
+}
+
+.rewardMeta {
+  margin-top: var(--space-1);
+  color: var(--text-secondary);
+  font-size: var(--size-xs);
+}
+
+.tierBadge {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.tierBadgeCommon {
+  background: #9d907c33;
+  color: #cfc3ae;
+}
+.tierBadgeRare {
+  background: #57d4e733;
+  color: var(--ice-200);
+}
+.tierBadgeEpic {
+  background: #f3bd5933;
+  color: var(--gold-100);
+}
+
+.scoreRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.scoreChip {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-md);
+  background: #0d0805a6;
+  color: var(--text-secondary);
+  font-size: var(--size-2xs);
+}
+
+.scoreChip strong {
+  display: block;
+  color: var(--gold-200);
+  font-family: var(--font-pixel);
+  font-size: var(--size-sm);
+}
+
+/* --- Perfil: constância, estante e inventário (US13/14/15) ---------------- */
+
+.profileHero {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  background: radial-gradient(ellipse 50% 70% at 16% 50%, #4a2f1673, transparent 62%),
+    linear-gradient(120deg, #21160bee, #140d06f2);
+}
+
+.profileHero img {
+  width: 126px;
+  height: 168px;
+  object-fit: contain;
+  object-position: center top;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 12px 14px #000000b3);
+}
+
+.profileScore {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--gold-200);
+  text-shadow: 0 4px 16px #00000099;
+}
+
+/* Constância semanal — linguagem de edificação, nunca de punição (spec §7) */
+.weekCard {
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.weekTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.weekCount {
+  color: var(--gold-200);
+  font-family: var(--font-pixel);
+  font-size: var(--size-lg);
+}
+
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-3);
+}
+
+.weekDay {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  aspect-ratio: 1;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: #0d0805a6;
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  text-transform: uppercase;
+}
+
+.weekDayActive {
+  border-color: var(--gold-400);
+  background: linear-gradient(180deg, var(--gold-300), var(--gold-500));
+  color: var(--text-on-gold);
+  box-shadow: var(--glow-gold);
+}
+
+/* O 4º e o 7º dia são marcos, não obrigações */
+.weekDayMilestone {
+  position: relative;
+}
+
+.weekDayMilestone::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  rotate: 45deg;
+  background: var(--ice-300);
+  box-shadow: var(--glow-ice);
+}
+
+.weekBanner {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: #f3bd5914;
+  color: var(--paper-200);
+  font-size: var(--size-sm);
+}
+
+.weekBannerComplete {
+  background: #57d4e71f;
+}
+
+.section {
+  margin-bottom: var(--space-6);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.sectionHead h2 {
+  font-size: var(--size-xl);
+  color: var(--paper-100);
+}
+
+.sectionCount {
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-size: var(--size-2xs);
+}
+
+/* Estante de Jornadas — memória da história */
+.shelfGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--space-3);
+}
+
+.shelfItem {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--paper-200);
+  text-align: center;
+  transition: transform var(--duration-fast);
+}
+
+.shelfItem:not(:disabled):hover {
+  transform: translateY(-3px);
+}
+
+.shelfFace {
+  display: grid;
+  gap: var(--space-2);
+  place-items: center;
+  padding: var(--space-3);
+  background: linear-gradient(165deg, #26190dee, #120c06f2);
+}
+
+.shelfArt {
+  width: 72px;
+  height: 72px;
+}
+
+.shelfItem strong {
+  font-size: var(--size-xs);
+}
+
+.shelfItem small {
+  color: var(--text-muted);
+  font-size: var(--size-3xs);
+}
+
+/* Inventário do Peregrino — quem ele está se tornando */
+.inventoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--space-3);
+}
+
+.inventorySlot {
+  display: grid;
+  gap: var(--space-2);
+  place-items: center;
+  padding: var(--space-3);
+  text-align: center;
+  background: linear-gradient(165deg, #1b1409ee, #100b05f2);
+}
+
+.slotName {
+  color: var(--gold-300);
+  font-family: var(--font-pixel);
+  font-size: var(--size-3xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.inventoryArt {
+  width: 66px;
+  height: 66px;
+}
+
+.inventorySlot strong {
+  font-size: var(--size-xs);
+  color: var(--paper-200);
+}
+
+/* --- Detalhe de item ----------------------------------------------------- */
+
+.detailDialog {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  padding: var(--space-4);
+  border: 0;
+  background: #0d0805e0;
+}
+
+.detailDialog::backdrop {
+  background: #0d0805cc;
+}
+
+.detailBody {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  width: min(100%, 420px);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+}
+
+.detailArt {
+  width: 116px;
+  height: 116px;
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-5);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: var(--surface-panel);
+  color: var(--paper-200);
+}
+
+/* --- Responsivo ---------------------------------------------------------- */
+
+@media (min-width: 760px) {
+  .screen {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+
+  .pilgrim {
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+  }
+
+  .rewardPair {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .loadoutGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .dialogue {
+    grid-template-columns: 76px 1fr;
+  }
+
+  .dialogue > img {
+    width: 92px;
+    height: 106px;
+  }
+
+  .loadoutGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .profileHero {
+    grid-template-columns: 100px 1fr;
+  }
+
+  .profileHero img {
+    width: 96px;
+    height: 128px;
+  }
+}
+
+/* Card de jornada bloqueada — apagado, mas ainda legível */
+.lockedInner {
+  position: relative;
+}
+
+.lockedCard {
+  filter: grayscale(0.9) brightness(0.46);
+}
+
+/* Trajetória da pedra no confronto em DOM */
+@keyframes stone-fly {
+  from {
+    left: 22%;
+    bottom: 30%;
+    opacity: 1;
+  }
+  60% {
+    bottom: 58%;
+  }
+  to {
+    left: 50%;
+    bottom: 44%;
+    opacity: 0;
+  }
+}
+
+.stoneFlying {
+  animation: stone-fly 0.62s cubic-bezier(0.3, 0.1, 0.5, 1) forwards;
+}
+
+.arStatusRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: var(--space-4) 0;
+}
+
+.arBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid #9cecff45;
+  border-radius: var(--radius-pill);
+  background: #0d1f2ba6;
+  color: var(--ice-200);
+  font-size: var(--size-2xs);
+  font-weight: 600;
+}
+
+.arBadge svg {
+  width: 15px;
+  height: 15px;
+}
+
+.arBadgeMuted {
+  border-color: var(--hairline-strong);
+  color: var(--text-muted);
+}
+
+/* Texto só para leitores de tela — anuncia troca de etapa sem ruído visual */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* fieldset sem a moldura padrão do navegador */
+.controlGroup {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+
+.controlGroup > legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+
+/* Mesmo cuidado do overlay do guia: só exibir o diálogo quando estiver aberto. */
+.detailDialog:not([open]) {
+  display: none;
+}

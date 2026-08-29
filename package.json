@@ -10,12 +10,12 @@
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
-    "check": "tsc --noEmit && oxlint src app tests",
+    "check": "tsc --noEmit && oxlint src app tests components",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "lint": "oxlint src app tests",
+    "lint": "oxlint src app tests components",
     "format": "oxfmt"
   },
   "dependencies": {

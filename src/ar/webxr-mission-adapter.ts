@@ -1,5 +1,10 @@
 import type { ArMissionAdapter, ThrowResult } from '@/src/ar/ar-mission-adapter';
+import { goliathDataUri } from '@/components/art/goliath';
 import type * as Three from 'three';
+
+/** Caminho da arte definitiva; quando ausente, o SVG compartilhado é usado. */
+const GOLIATH_SPRITE = '/assets/characters/goliath.png';
+const DAVID_SPRITE = '/assets/characters/pilgrim-male.png';
 
 export class WebXrMissionAdapter implements ArMissionAdapter {
   private container: HTMLElement | null = null;
@@ -8,12 +13,14 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
   private camera: Three.PerspectiveCamera | null = null;
   private reticle: Three.Mesh | null = null;
   private missionGroup: Three.Group | null = null;
-  private goliath: Three.Group | null = null;
+  private goliath: Three.Sprite | null = null;
+  private goliathShadow: Three.Mesh | null = null;
   private hitTestSource: XRHitTestSource | null = null;
   private referenceSpace: XRReferenceSpace | null = null;
   private session: XRSession | null = null;
   private placed = false;
   private initialized = false;
+  private defeated = false;
 
   async isSupported(): Promise<boolean> {
     if (typeof navigator === 'undefined') return false;
@@ -55,30 +62,55 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     if (!this.missionGroup || !this.reticle || !this.reticle.visible) return;
     this.missionGroup.position.setFromMatrixPosition(this.reticle.matrix);
     this.missionGroup.visible = true;
+    this.reticle.visible = false;
     this.placed = true;
   }
 
+  /**
+   * Lança a pedra em arco, com rastro, e faz Golias reagir ao impacto.
+   * O acerto vibra o controle quando o aparelho oferece atuador háptico.
+   */
   async throwStone(): Promise<ThrowResult> {
-    if (!this.placed || !this.missionGroup || !this.goliath) return 'miss';
+    if (!this.placed || !this.missionGroup || !this.goliath || this.defeated) return 'miss';
     const THREE = await import('three');
+
     const stone = new THREE.Mesh(
-      new THREE.SphereGeometry(0.035, 12, 12),
-      new THREE.MeshStandardMaterial({ color: 0x8a7356, roughness: 0.9 }),
+      new THREE.SphereGeometry(0.03, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0x9aa1a6, roughness: 0.85 }),
     );
-    stone.position.set(-0.45, 0.55, 0.15);
-    this.missionGroup.add(stone);
+    const trail = this.createTrail(THREE);
+    this.missionGroup.add(stone, trail);
+
+    const from = new THREE.Vector3(-0.42, 0.42, 0.05);
+    const to = new THREE.Vector3(0.4, 0.78, 0);
+    const duration = 620;
     const start = performance.now();
-    const duration = 700;
-    return new Promise((resolve) => {
-      const animate = (time: number) => {
+
+    await new Promise<void>((resolve) => {
+      const step = (time: number) => {
         const progress = Math.min((time - start) / duration, 1);
-        stone.position.set(-0.45 + progress * 0.9, 0.55 + Math.sin(progress * Math.PI) * 0.35, 0.15 - progress * 0.15);
-        if (progress < 1) return void requestAnimationFrame(animate);
-        this.goliath!.rotation.z = -Math.PI / 2;
-        resolve('hit');
+        stone.position.lerpVectors(from, to, progress);
+        stone.position.y += Math.sin(progress * Math.PI) * 0.34;
+        this.pushTrail(trail, stone.position);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+          return;
+        }
+        resolve();
       };
-      requestAnimationFrame(animate);
+      requestAnimationFrame(step);
     });
+
+    this.missionGroup.remove(stone, trail);
+    stone.geometry.dispose();
+    (stone.material as Three.Material).dispose();
+    trail.geometry.dispose();
+    (trail.material as Three.Material).dispose();
+
+    this.defeated = true;
+    this.pulseHaptics();
+    await this.playImpact();
+    return 'hit';
   }
 
   dispose(): void {
@@ -96,10 +128,12 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.reticle = null;
     this.missionGroup = null;
     this.goliath = null;
+    this.goliathShadow = null;
     this.hitTestSource = null;
     this.referenceSpace = null;
     this.placed = false;
     this.initialized = false;
+    this.defeated = false;
   }
 
   private async setupRenderer(container: HTMLElement): Promise<void> {
@@ -113,15 +147,17 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(this.renderer.domElement);
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 2.2));
+    this.scene.add(new THREE.HemisphereLight(0xfff0d8, 0x445566, 2.4));
+
     this.reticle = new THREE.Mesh(
-      new THREE.RingGeometry(0.12, 0.16, 32).rotateX(-Math.PI / 2),
-      new THREE.MeshBasicMaterial({ color: 0xd8b35c }),
+      new THREE.RingGeometry(0.11, 0.15, 32).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0xf3bd59, transparent: true, opacity: 0.9 }),
     );
     this.reticle.matrixAutoUpdate = false;
     this.reticle.visible = false;
     this.scene.add(this.reticle);
-    this.createMissionPrimitives(THREE);
+
+    await this.createMissionScene(THREE);
   }
 
   private async initializeSession(session: XRSession): Promise<void> {
@@ -133,6 +169,7 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.hitTestSource = (await session.requestHitTestSource({ space: viewerSpace })) ?? null;
     if (!this.hitTestSource) throw new Error('Unable to create a WebXR hit-test source.');
     session.addEventListener('end', () => this.dispose(), { once: true });
+
     this.renderer!.setAnimationLoop((_time, frame) => {
       if (frame && this.hitTestSource && this.referenceSpace && !this.placed) {
         const hit = frame.getHitTestResults(this.hitTestSource)[0];
@@ -147,20 +184,132 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.initialized = true;
   }
 
-  private createMissionPrimitives(THREE: typeof import('three')): void {
+  /** Sprites planos ancorados na superfície, com sombra projetada no chão. */
+  private async createMissionScene(THREE: typeof import('three')): Promise<void> {
     this.missionGroup = new THREE.Group();
     this.missionGroup.visible = false;
-    const david = new THREE.Group();
-    david.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.12, 0.35, 4, 8), new THREE.MeshStandardMaterial({ color: 0xc49a6c })));
-    david.position.set(-0.45, 0.35, 0);
-    this.goliath = new THREE.Group();
-    this.goliath.add(new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.65, 4, 8), new THREE.MeshStandardMaterial({ color: 0x5b4636, metalness: 0.25 })));
-    this.goliath.position.set(0.45, 0.55, 0);
+
     const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(1.1, 32).rotateX(-Math.PI / 2),
-      new THREE.MeshStandardMaterial({ color: 0x6a5439, transparent: true, opacity: 0.72 }),
+      new THREE.CircleGeometry(1.05, 40).rotateX(-Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x6a5439, transparent: true, opacity: 0.5 }),
     );
-    this.missionGroup.add(ground, david, this.goliath);
+
+    const goliathTexture = await this.loadTexture(THREE, GOLIATH_SPRITE, goliathDataUri());
+    this.goliath = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: goliathTexture ?? undefined, transparent: true }),
+    );
+    this.goliath.scale.set(0.62, 1.14, 1);
+    this.goliath.position.set(0.4, 0.57, 0);
+
+    const davidTexture = await this.loadTexture(THREE, DAVID_SPRITE, null);
+    const david = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: davidTexture ?? undefined, transparent: true }),
+    );
+    david.scale.set(0.34, 0.62, 1);
+    david.position.set(-0.42, 0.31, 0.05);
+
+    this.goliathShadow = this.createShadow(THREE, 0.4, 0.22);
+    const davidShadow = this.createShadow(THREE, -0.42, 0.12);
+
+    this.missionGroup.add(ground, davidShadow, this.goliathShadow, david, this.goliath);
     this.scene!.add(this.missionGroup);
+  }
+
+  private createShadow(THREE: typeof import('three'), x: number, radius: number): Three.Mesh {
+    const shadow = new THREE.Mesh(
+      new THREE.CircleGeometry(radius, 24).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.34 }),
+    );
+    shadow.position.set(x, 0.002, 0);
+    return shadow;
+  }
+
+  private createTrail(THREE: typeof import('three')): Three.Line {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(180), 3));
+    geometry.setDrawRange(0, 0);
+    return new THREE.Line(
+      geometry,
+      new THREE.LineBasicMaterial({ color: 0xffe6a8, transparent: true, opacity: 0.75 }),
+    );
+  }
+
+  private pushTrail(trail: Three.Line, position: Three.Vector3): void {
+    const attribute = trail.geometry.getAttribute('position') as Three.BufferAttribute;
+    const count = trail.geometry.drawRange.count;
+    if (count >= attribute.count) return;
+    attribute.setXYZ(count, position.x, position.y, position.z);
+    attribute.needsUpdate = true;
+    trail.geometry.setDrawRange(0, count + 1);
+  }
+
+  /** Recuo, tombo e desaparecimento — a reação que confirma o acerto. */
+  private async playImpact(): Promise<void> {
+    const goliath = this.goliath;
+    const shadow = this.goliathShadow;
+    if (!goliath) return;
+    const material = goliath.material as Three.SpriteMaterial;
+    const baseY = goliath.position.y;
+    const start = performance.now();
+    const duration = 900;
+
+    await new Promise<void>((resolve) => {
+      const step = (time: number) => {
+        const progress = Math.min((time - start) / duration, 1);
+        const recoil = Math.sin(Math.min(progress * 4, 1) * Math.PI) * 0.06;
+        material.rotation = progress * (Math.PI / 2);
+        goliath.position.x = 0.4 + recoil;
+        goliath.position.y = baseY - progress * (baseY - 0.3);
+        material.opacity = 1 - progress * 0.85;
+        if (shadow) (shadow.material as Three.Material).opacity = 0.34 * (1 - progress);
+        if (progress < 1) {
+          requestAnimationFrame(step);
+          return;
+        }
+        goliath.visible = false;
+        resolve();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+
+  private pulseHaptics(): void {
+    const sources = this.session?.inputSources;
+    if (!sources) return;
+    for (const source of sources) {
+      const actuator = source.gamepad?.hapticActuators?.[0];
+      if (actuator && 'pulse' in actuator) {
+        void (actuator as { pulse(intensity: number, duration: number): Promise<boolean> })
+          .pulse(0.8, 140)
+          .catch(() => undefined);
+      }
+    }
+  }
+
+  /**
+   * Carrega a arte preferida e cai para a alternativa se o arquivo não existir.
+   * Devolve `null` quando nenhuma das duas está disponível.
+   */
+  private async loadTexture(
+    THREE: typeof import('three'),
+    preferred: string,
+    fallback: string | null,
+  ): Promise<Three.Texture | null> {
+    const loader = new THREE.TextureLoader();
+    const load = (url: string) =>
+      new Promise<Three.Texture | null>((resolve) => {
+        loader.load(
+          url,
+          (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.magFilter = THREE.NearestFilter;
+            resolve(texture);
+          },
+          undefined,
+          () => resolve(null),
+        );
+      });
+
+    return (await load(preferred)) ?? (fallback ? await load(fallback) : null);
   }
 }

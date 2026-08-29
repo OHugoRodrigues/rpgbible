@@ -1,0 +1,87 @@
+.overlay {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  padding: var(--space-6) var(--space-5);
+  border: 0;
+  color: var(--text-primary);
+  background: radial-gradient(ellipse 70% 50% at 50% 26%, #1d4a60, #0d0805f7 62%);
+  text-align: center;
+  animation: peregrino-fade-in var(--duration-base);
+}
+
+.overlay::backdrop {
+  background: #0d0805cc;
+}
+
+.close {
+  position: absolute;
+  top: max(var(--space-5), env(safe-area-inset-top));
+  right: var(--space-5);
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 50%;
+  background: #0d0805a6;
+  color: var(--paper-200);
+}
+
+.avatar {
+  width: min(58vw, 230px);
+  height: 180px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 0 30px #9cecff66);
+  animation: peregrino-float 4s ease-in-out infinite;
+}
+
+.overlay h2 {
+  font-size: var(--size-3xl);
+  color: var(--ice-200);
+  letter-spacing: var(--tracking-wide);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  max-width: 54ch;
+}
+
+.text {
+  color: #c6d7dc;
+  font-size: var(--size-lg);
+  line-height: 1.6;
+}
+
+.question {
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--gold-300);
+  background: #ffffff0a;
+  color: var(--paper-200);
+  font-style: italic;
+  text-align: left;
+}
+
+.notice {
+  color: var(--text-muted);
+  font-size: var(--size-2xs);
+  line-height: 1.5;
+}
+
+/* Um <dialog> fechado é display:none pelo estilo do agente; declarar `display`
+   na regra base sobrescreveria isso e deixaria o overlay sempre visível. */
+.overlay:not([open]) {
+  display: none;
+}
