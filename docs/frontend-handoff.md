@@ -1,26 +1,56 @@
-# Contrato para a próxima rodada de frontend
+# Interface: como ela consome o domínio
+
+A interface desta rodada já segue o contrato abaixo. O documento deixou de ser um pedido e passou a
+descrever o que está implementado, para que a próxima pessoa mantenha a mesma separação.
 
 ## Integração
 
-- Importar tipos, conteúdo, store e adaptadores de `@/src`.
-- Criar o store no cliente com `createBrowserDemoStore()` e fornecer a instância via Context ou hook fino.
-- Não duplicar score, recompensa, constância ou validações em componentes.
-- Para testes de interface, injetar `FakeArMissionAdapter`; usar `WebXrMissionAdapter` somente no aparelho real.
-- A rota AR deve importar a implementação real dinamicamente para manter Three.js fora do bundle inicial.
-- Ao concluir as cinco perguntas, chamar `completeOnboarding()`; não guardar as respostas brutas em estado de componente, analytics ou logs.
-- Consumir `getPersonalizedDavidStages()` e o catálogo de recomendações; componentes não devem recalcular a segmentação.
-- Parakletos chama apenas `POST /api/parakletos`. Exibir `identityNotice` no primeiro contato e mantê-lo acessível na ajuda.
-- Minigames devem usar as actions do store (`startMinigame`, `answerMinigame`, recuperação e retomada); o componente apenas renderiza o relógio derivado de `deadlineAt`.
-- Ao entrar em `cooldown`, oferecer a leitura indicada e agendar `BrowserRecoveryNotifier` somente se a permissão já existir. Na reabertura, comparar o horário atual com `cooldownAvailableAt`.
+- Tipos, conteúdo, store e adaptadores vêm de `@/src`. `app/page.tsx` não define regra de jogo.
+- `app/providers/store-provider.tsx` cria o store com `createBrowserDemoStore()` e o expõe por
+  `useDemoStore` (seletor) e `useDemoActions` (ações). No servidor usa um storage inerte, porque
+  `localStorage` não existe lá.
+- Score, recompensa, constância e validação nunca são recalculados em componentes.
+- `useHydrated()` evita divergência de hidratação antes de o `persist` restaurar o estado.
+- A rota AR importa `WebXrMissionAdapter` dinamicamente, mantendo Three.js fora do bundle inicial.
+  Testes devem injetar `FakeArMissionAdapter`.
+- `completeOnboarding()` é chamado ao fim das cinco perguntas; as respostas cruas não são guardadas
+  em estado de componente, analytics ou log.
+- Parakletos chama apenas `POST /api/parakletos`, com `PersonalizationProfile` do domínio. Enviar um
+  valor fora das uniões (`audienceTone`, `narrativePreference`) faz a rota responder 400 em silêncio.
+- `PARAKLETOS_IDENTITY_NOTICE` é importado de `@/src/llm/parakletos-policy`, nunca duplicado.
 
-## Sequência sugerida
+## Telas
 
-`home -> pilgrim -> journeys -> chapters -> discovery -> preparation -> ar -> quiz -> result -> profile`
+Uma por `DemoStep`, em `components/screens/`:
 
-O onboarding de personalização pode entrar entre `home` e `pilgrim`; a URL ainda será definida pela designer.
+`home → pilgrim → journeys → chapters → discovery → preparation → ar → quiz → result → profile`
 
-As rotas podem mudar sem alterar o domínio; `DemoStep` é o estado semântico, não uma URL obrigatória.
+A calibração é o único passo puramente de interface: fica entre `pilgrim` e `journeys`, é opcional e
+só toca o domínio quando `completeOnboarding` roda.
+
+## Quiz
+
+`answerQuiz` só marca a pergunta como concluída no acerto, e apenas o acerto de primeira tentativa
+pontua. A tela pede nova tentativa em vez de avançar com resposta errada — avançar deixaria a etapa
+aberta e `finalizeMission` lançaria.
+
+## Design system
+
+`app/globals.css` concentra tokens, tipografia e reset; ele precisa continuar importado por
+`app/layout.tsx` ou nada disso chega ao bundle. As primitivas de moldura estão em
+`components/frame/` e não devem ser recriadas por tela.
+
+Um `<dialog>` fechado é `display: none` pelo estilo do agente. Declarar `display` na regra base de um
+diálogo sobrescreve isso e o deixa permanentemente visível — sempre acompanhe de
+`:not([open]) { display: none }`.
+
+## Arte substituível
+
+Cenas, Golias, variantes de cabelo e ícones de item tentam um arquivo em `public/assets/` e caem
+para a versão desenhada quando ele não existe. A tabela de caminhos está no README.
 
 ## Gate de AR
 
-Antes de exibir o CTA, chamar `isSupported()`. `start()` precisa ser disparado por gesto do usuário. O frontend pode usar `mountLaunchButton()` quando quiser delegar a abertura da sessão ao `ARButton` oficial do Three.js.
+`isSupported()` roda antes de exibir o CTA; `start()` precisa de gesto do usuário. Onde não há
+`immersive-ar`, o confronto acontece em DOM com a mesma arte de Golias, para que a demo nunca fique
+sem clímax.

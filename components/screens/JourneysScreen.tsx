@@ -1,9 +1,9 @@
 'use client';
 
-import { GoldFrame, LockBadge, Overline } from '@/components/frame';
+import { GoldFrame, Overline } from '@/components/frame';
 import { PILOT_JOURNEYS } from '@/src/content/pilot';
 import type { JourneyId } from '@/src/domain/types';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Lock } from 'lucide-react';
 import { JourneyEmblem } from './JourneyEmblem';
 import styles from './Screens.module.css';
 
@@ -52,20 +52,20 @@ export function JourneysScreen({
                   : `${journey.name} — ${journey.theme}. Em breve.`
               }
             >
-              <GoldFrame tight innerClassName={journey.available ? undefined : styles.lockedInner}>
-                <div className={journey.available ? undefined : styles.lockedCard}>
-                  <div className={styles.journeyInner}>
-                    <span className={styles.journeyEmblem}>
-                      <JourneyEmblem journey={journey.id} />
+              <GoldFrame tight innerClassName={styles.journeyInner}>
+                <span className={styles.journeyEmblem}>
+                  <JourneyEmblem journey={journey.id} />
+                  {journey.available ? null : (
+                    <span className={styles.journeyLock} aria-hidden="true">
+                      <Lock />
                     </span>
-                    <span className={styles.journeyName}>{journey.name}</span>
-                    <span className={styles.journeyTheme}>{journey.theme}</span>
-                    <span className={styles.journeyStatus}>
-                      {journey.available ? '5 capítulos · 1 jogável' : 'Conteúdo futuro'}
-                    </span>
-                  </div>
-                </div>
-                {journey.available ? null : <LockBadge />}
+                  )}
+                </span>
+                <span className={styles.journeyName}>{journey.name}</span>
+                <span className={styles.journeyTheme}>{journey.theme}</span>
+                <span className={styles.journeyStatus}>
+                  {journey.available ? '5 capítulos · 1 jogável' : 'Em breve'}
+                </span>
               </GoldFrame>
             </button>
           </li>
