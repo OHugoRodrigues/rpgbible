@@ -1,6 +1,7 @@
 'use client';
 
 import { Backpack, CalendarCheck, Map } from 'lucide-react';
+import { ParakletosHudIcon } from '@/components/guide/ParakletosAvatar';
 import styles from './Hud.module.css';
 
 /**
@@ -14,6 +15,7 @@ export function Hud({
   onProfile,
   onGuide,
   guidePending = false,
+  genericTone = false,
 }: {
   score: number;
   activeDays: number;
@@ -21,6 +23,7 @@ export function Hud({
   onProfile: () => void;
   onGuide: () => void;
   guidePending?: boolean;
+  genericTone?: boolean;
 }) {
   return (
     <nav className={styles.hud} aria-label="Navegação da jornada">
@@ -48,9 +51,12 @@ export function Hud({
         className={`${styles.hudButton} ${styles.guideButton}`}
         onClick={onGuide}
         data-pending={guidePending}
-        aria-label="Falar com Parakletos"
+        title={genericTone ? 'Tom geral — calibração ainda não feita' : undefined}
+        aria-label={
+          genericTone ? 'Falar com Parakletos (tom geral)' : 'Falar com Parakletos'
+        }
       >
-        <img src="/assets/characters/parakletos-guide.png" alt="" />
+        <ParakletosHudIcon />
       </button>
 
       <button type="button" className={styles.hudButton} onClick={onProfile} aria-label="Estante e inventário">

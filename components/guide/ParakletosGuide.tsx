@@ -1,18 +1,15 @@
 'use client';
 
 import { Cartouche, GhostButton } from '@/components/frame';
+import { GENERIC_PARAKLETOS_PROFILE } from '@/src/application/demo-flow';
 import type { AdaptiveJourneyStageId, PersonalizationProfile } from '@/src/domain/types';
 import type { ParakletosMessage } from '@/src/llm/parakletos-types';
 import { X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { ParakletosAvatar } from './ParakletosAvatar';
 import styles from './ParakletosGuide.module.css';
 
-const DEFAULT_PROFILE: PersonalizationProfile = {
-  audienceTone: 'teen',
-  biblicalLiteracy: 'developing',
-  experienceMode: 'balanced',
-  narrativePreference: 'adventure',
-};
+const QUESTION_MAX = 280;
 
 /**
  * Parakletos — guia educativo.
@@ -25,24 +22,20 @@ export function ParakletosGuide({
   open,
   stageId,
   profile,
+  personalized,
   onClose,
 }: {
   open: boolean;
   stageId: AdaptiveJourneyStageId;
   profile: PersonalizationProfile | null;
+  personalized: boolean;
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [message, setMessage] = useState<ParakletosMessage | null>(null);
   const [failed, setFailed] = useState(false);
-
-  /* Reset ao abrir/fechar, ajustado durante o render em vez de num efeito. */
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    setMessage(null);
-    setFailed(false);
-  }
+  const [draft, setDraft] = useState('');
+  const [question, setQuestion] = useState<string | undefined>();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -60,11 +53,18 @@ export function ParakletosGuide({
         const response = await fetch('/api/parakletos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stageId, profile: profile ?? DEFAULT_PROFILE }),
+          body: JSON.stringify({
+            stageId,
+            profile: profile ?? GENERIC_PARAKLETOS_PROFILE,
+            question,
+          }),
         });
         if (!response.ok) throw new Error(`Parakletos respondeu ${response.status}`);
         const payload = (await response.json()) as ParakletosMessage;
-        if (!cancelled) setMessage(payload);
+        if (!cancelled) {
+          setFailed(false);
+          setMessage(payload);
+        }
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -73,9 +73,19 @@ export function ParakletosGuide({
     return () => {
       cancelled = true;
     };
-  }, [open, profile, stageId]);
+  }, [open, profile, stageId, question]);
 
   const loading = open && !message && !failed;
+
+  function ask(event: { preventDefault(): void }) {
+    event.preventDefault();
+    const next = draft.trim().slice(0, QUESTION_MAX);
+    if (!next) return;
+    setFailed(false);
+    setMessage(null);
+    setQuestion(next);
+    setDraft('');
+  }
 
   return (
     <dialog
@@ -88,8 +98,14 @@ export function ParakletosGuide({
         <X aria-hidden="true" />
       </button>
 
-      <img className={styles.avatar} src="/assets/characters/parakletos-flight.png" alt="" />
+      <ParakletosAvatar className={styles.avatar} />
       <h2 id="parakletos-title">Parakletos</h2>
+
+      {personalized ? null : (
+        <p className={styles.genericNotice}>
+          Você ainda não calibrou a jornada. O guia usa um tom geral, sem fingir que já te conhece.
+        </p>
+      )}
 
       <div className={styles.body} aria-live="polite">
         {loading ? <p className={styles.text}>Consultando a passagem…</p> : null}
@@ -109,6 +125,17 @@ export function ParakletosGuide({
           </>
         ) : null}
       </div>
+
+      <form className={styles.ask} onSubmit={ask}>
+        <label htmlFor="parakletos-question">Perguntar ao guia</label>
+        <input
+          id="parakletos-question"
+          maxLength={QUESTION_MAX}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder="Uma dúvida curta sobre esta etapa…"
+        />
+      </form>
 
       <GhostButton onClick={onClose}>Voltar à jornada</GhostButton>
     </dialog>

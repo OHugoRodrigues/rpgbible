@@ -5,16 +5,13 @@ import { GhostButton, GoldButton, Overline } from '@/components/frame';
 import { SceneStage } from '@/components/scene/SceneStage';
 import { PilgrimSprite } from './PilgrimSprite';
 import type { ArMissionAdapter } from '@/src/ar/ar-mission-adapter';
+import { isStoneAimHit, nextStoneAim } from '@/src/ar/aim';
 import type { PilgrimAppearance } from '@/src/domain/types';
 import { ChevronLeft, Scan, Smartphone } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './Screens.module.css';
 
 type ArStatus = 'checking' | 'unsupported' | 'ready' | 'scanning' | 'placed' | 'throwing' | 'done';
-
-/** Centro da zona dourada da barra de mira, em porcentagem. */
-const TARGET = 68;
-const TOLERANCE = 10;
 
 /**
  * US08 — Davi × Golias.
@@ -41,9 +38,8 @@ export function ArScreen({
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const adapterRef = useRef<ArMissionAdapter | null>(null);
-  const directionRef = useRef(1);
+  const directionRef = useRef<1 | -1>(1);
 
-  /* Gate de AR: o CTA só aparece depois de confirmar o suporte real. */
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -67,25 +63,31 @@ export function ArScreen({
     };
   }, []);
 
-  /* Pulso da mira, usado apenas no confronto em DOM. */
   useEffect(() => {
     if (!charging) return;
     const pulse = window.setInterval(() => {
       setAim((value) => {
-        const next = value + directionRef.current * 3;
-        if (next >= 98) {
-          directionRef.current = -1;
-          return 98;
-        }
-        if (next <= 2) {
-          directionRef.current = 1;
-          return 2;
-        }
-        return next;
+        const next = nextStoneAim(value, directionRef.current);
+        directionRef.current = next.direction;
+        return next.aim;
       });
     }, 30);
     return () => window.clearInterval(pulse);
   }, [charging]);
+
+  const inXr = status === 'scanning' || status === 'placed' || status === 'throwing';
+
+  useEffect(() => {
+    if (status !== 'placed') return;
+    let frame = 0;
+    const tick = () => {
+      const live = adapterRef.current?.getAim?.();
+      if (typeof live === 'number') setAim(live);
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [status]);
 
   const startAr = useCallback(async () => {
     if (!viewportRef.current) return;
@@ -106,16 +108,21 @@ export function ArScreen({
   function placeAr() {
     adapterRef.current?.placeScene();
     setStatus('placed');
-    setMessage('Cena posicionada. Agora mire e lance a pedra.');
+    setMessage('Cena posicionada. Solte a pedra quando o pulso cruzar a faixa dourada.');
   }
 
   async function throwAr() {
     if (!adapterRef.current) return;
     setStatus('throwing');
     const result = await adapterRef.current.throwStone();
+    const hit = result === 'hit';
     setStatus('done');
-    setDefeated(result === 'hit');
-    onResult(result === 'hit');
+    setDefeated(hit);
+    setMessage(
+      hit
+        ? 'A pedra encontrou a testa descoberta — o único ponto que o bronze não cobria.'
+        : 'A pedra passou longe. Respire, acompanhe o ritmo e solte dentro da faixa.',
+    );
   }
 
   function releaseStone() {
@@ -126,8 +133,7 @@ export function ArScreen({
     }
     setCharging(false);
     setStoneFlying(true);
-    const distance = Math.abs(aim - TARGET);
-    const hit = distance <= TOLERANCE;
+    const hit = isStoneAimHit(aim);
 
     window.setTimeout(() => {
       setStoneFlying(false);
@@ -138,12 +144,11 @@ export function ArScreen({
           ? 'A pedra encontrou a testa descoberta — o único ponto que o bronze não cobria.'
           : 'A pedra passou longe. Respire, acompanhe o ritmo e solte dentro da faixa.',
       );
-      if (hit) onResult(true);
     }, 620);
   }
 
-  const inXr = status === 'scanning' || status === 'placed' || status === 'throwing';
   const domDuel = status === 'unsupported' || status === 'ready' || (status === 'done' && !inXr);
+  const showAim = charging || status === 'placed' || (status === 'throwing' && inXr);
 
   return (
     <section className={styles.screen}>
@@ -190,6 +195,13 @@ export function ArScreen({
             </div>
           ) : null}
 
+          {inXr && showAim ? (
+            <div className={styles.aimTrack} aria-hidden="true">
+              <span className={styles.aimZone} />
+              <span className={styles.aimMarker} style={{ left: `${aim}%` }} />
+            </div>
+          ) : null}
+
           <div ref={viewportRef} className={styles.arViewport} />
         </SceneStage>
       </div>
@@ -231,6 +243,12 @@ export function ArScreen({
         {status === 'done' && !defeated ? (
           <GhostButton
             onClick={() => {
+              if (adapterRef.current) {
+                setStatus('placed');
+                setDefeated(false);
+                setMessage('Acompanhe o pulso e lance de novo na faixa dourada.');
+                return;
+              }
               setStatus('unsupported');
               setAim(8);
               setMessage(null);

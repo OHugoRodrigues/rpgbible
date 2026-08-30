@@ -5,5 +5,6 @@ export interface ArMissionAdapter {
   start(container: HTMLElement): Promise<void>;
   placeScene(): void;
   throwStone(): Promise<ThrowResult>;
+  getAim?(): number;
   dispose(): void;
 }

@@ -1,11 +1,14 @@
 import {
   answerQuiz,
+  completeDavidPhase,
   completeFixedStage,
   completeOnboarding,
   createInitialDemoState,
   finalizeMission,
   recordArAttempt,
   setAppearance,
+  startDavidMission,
+  updateDavidPhaseData,
 } from '@/src/application/demo-engine';
 import { migrateDemoState } from '@/src/application/migrations';
 import {
@@ -18,10 +21,12 @@ import {
 import {
   DEMO_SCHEMA_VERSION,
   type AdaptiveJourneyStageId,
+  type DavidPhaseId,
   type DemoState,
   type DemoStep,
   type OnboardingAnswers,
   type PilgrimAppearance,
+  type SerializableValue,
 } from '@/src/domain/types';
 import type { RecoveryMode } from '@/src/games/types';
 import { createStore } from 'zustand/vanilla';
@@ -31,6 +36,9 @@ export const DEMO_STORAGE_KEY = 'peregrino-demo-v1';
 
 export interface DemoActions {
   completeOnboarding(answers: OnboardingAnswers): void;
+  startDavidMission(): void;
+  updateDavidPhaseData(phase: DavidPhaseId, data: SerializableValue): void;
+  completeDavidPhase(phase: DavidPhaseId, points?: number): void;
   startMinigame(challengeId: AdaptiveJourneyStageId): void;
   answerMinigame(challengeId: AdaptiveJourneyStageId, answer: string): void;
   chooseMinigameRecovery(
@@ -43,6 +51,7 @@ export interface DemoActions {
   goTo(step: DemoStep): void;
   completeDiscovery(): void;
   completePreparation(): void;
+  completeArByNarrative(): void;
   recordArResult(hit: boolean): void;
   answerQuiz(questionId: string, correct: boolean): void;
   finalizeMission(): void;
@@ -65,6 +74,21 @@ export function createDemoStore(options: CreateDemoStoreOptions = {}) {
           set((state) => ({
             ...state,
             ...completeOnboarding(state, answers, now()),
+          })),
+        startDavidMission: () =>
+          set((state) => ({
+            ...state,
+            ...startDavidMission(state, now()),
+          })),
+        updateDavidPhaseData: (phase, data) =>
+          set((state) => ({
+            ...state,
+            ...updateDavidPhaseData(state, phase, data, now()),
+          })),
+        completeDavidPhase: (phase, points) =>
+          set((state) => ({
+            ...state,
+            ...completeDavidPhase(state, phase, now(), points),
           })),
         startMinigame: (challengeId) =>
           set((state) => ({
@@ -108,6 +132,11 @@ export function createDemoStore(options: CreateDemoStoreOptions = {}) {
             ...state,
             ...completeFixedStage(state, 'preparation', now()),
           })),
+        completeArByNarrative: () =>
+          set((state) => ({
+            ...state,
+            ...completeFixedStage(state, 'ar', now()),
+          })),
         recordArResult: (hit) =>
           set((state) => ({ ...state, ...recordArAttempt(state, hit, now()) })),
         answerQuiz: (questionId, correct) =>
@@ -142,6 +171,7 @@ function toDemoState(store: DemoStore): DemoState {
     appearance: store.appearance,
     personalization: store.personalization,
     minigameProgress: store.minigameProgress,
+    davidMission: store.davidMission,
     currentStep: store.currentStep,
     stageResults: store.stageResults,
     quizAnswers: store.quizAnswers,

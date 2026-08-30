@@ -2,18 +2,22 @@
 
 import { ParakletosGuide } from '@/components/guide/ParakletosGuide';
 import { Hud } from '@/components/hud/Hud';
-import { ArScreen } from '@/components/screens/ArScreen';
 import { CalibrationScreen } from '@/components/screens/CalibrationScreen';
 import { ChaptersScreen } from '@/components/screens/ChaptersScreen';
-import { DiscoveryScreen } from '@/components/screens/DiscoveryScreen';
+import { DavidTrailScreen } from '@/components/screens/DavidTrailScreen';
 import { HomeScreen } from '@/components/screens/HomeScreen';
 import { JourneysScreen } from '@/components/screens/JourneysScreen';
 import { PilgrimScreen } from '@/components/screens/PilgrimScreen';
-import { PreparationScreen } from '@/components/screens/PreparationScreen';
 import { ProfileScreen } from '@/components/screens/ProfileScreen';
-import { QuizScreen } from '@/components/screens/QuizScreen';
 import { ResultScreen } from '@/components/screens/ResultScreen';
-import type { ChapterId } from '@/src/domain/types';
+import {
+  canResumeDemo,
+  parakletosStageFor,
+  resumeDemoStep,
+} from '@/src/application/demo-flow';
+import { getPersonalizedDavidStages, getStoryRecommendations } from '@/src/application/personalization-engine';
+import { STORY_RECOMMENDATIONS } from '@/src/content/adaptive-journeys';
+import { DEMO_SCHEMA_VERSION, type ChapterId, type JourneyId } from '@/src/domain/types';
 import { useState } from 'react';
 import { DemoStoreProvider, useDemoActions, useDemoStore, useHydrated } from './providers/store-provider';
 import styles from '@/components/screens/Screens.module.css';
@@ -45,18 +49,47 @@ function Experience() {
   const rewards = useDemoStore((state) => state.rewards);
   const consistency = useDemoStore((state) => state.consistency);
   const missionCompleted = useDemoStore((state) => state.missionCompleted);
-
+  const davidMission = useDemoStore((state) => state.davidMission);
+  const stageResults = useDemoStore((state) => state.stageResults);
+  const minigameProgress = useDemoStore((state) => state.minigameProgress);
+  const quizAnswers = useDemoStore((state) => state.quizAnswers);
   const [calibrating, setCalibrating] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
 
-  /* Evita divergência entre servidor e cliente antes da reidratação do persist. */
   if (!hydrated) return <main className={styles.world} />;
 
   const completedChapters: ChapterId[] = missionCompleted ? ['provacao'] : [];
   const showHud = step !== 'home' && !calibrating;
+  const personalized = personalization !== null;
+  const chapterStages = personalization ? getPersonalizedDavidStages(personalization) : undefined;
+  const stories = personalization
+    ? getStoryRecommendations(personalization.profile.narrativePreference)
+    : STORY_RECOMMENDATIONS.filter((story) => story.context === 'adventure');
 
-  function finishMission() {
-    actions.finalizeMission();
+  const resumeState = {
+    schemaVersion: DEMO_SCHEMA_VERSION,
+    appearance,
+    personalization,
+    minigameProgress,
+    davidMission,
+    currentStep: step,
+    stageResults,
+    quizAnswers,
+    score,
+    rewards,
+    consistency,
+    missionCompleted,
+    updatedAt: '',
+  };
+
+  function playChapter(chapter: ChapterId) {
+    if (chapter !== 'provacao') return;
+    actions.startDavidMission();
+  }
+
+  function selectJourney(journey: JourneyId) {
+    if (journey !== 'davi') return;
+    actions.goTo('chapters');
   }
 
   return (
@@ -68,6 +101,7 @@ function Experience() {
         <Hud
           score={score.total}
           activeDays={consistency.activeDays.length}
+          genericTone={!personalized}
           onJourneys={() => actions.goTo('journeys')}
           onProfile={() => actions.goTo('profile')}
           onGuide={() => setGuideOpen(true)}
@@ -88,7 +122,9 @@ function Experience() {
           {step === 'home' ? (
             <HomeScreen
               onStart={() => actions.goTo('pilgrim')}
-              onContinue={missionCompleted ? () => actions.goTo('profile') : undefined}
+              onContinue={
+                canResumeDemo(resumeState) ? () => actions.goTo(resumeDemoStep(resumeState)) : undefined
+              }
             />
           ) : null}
 
@@ -103,53 +139,28 @@ function Experience() {
           ) : null}
 
           {step === 'journeys' ? (
-            <JourneysScreen
-              onSelect={() => actions.goTo('chapters')}
-              onBack={() => actions.goTo('pilgrim')}
-            />
+            <JourneysScreen onSelect={selectJourney} onBack={() => actions.goTo('pilgrim')} />
           ) : null}
 
           {step === 'chapters' ? (
             <ChaptersScreen
               completedChapters={completedChapters}
-              onPlay={() => actions.goTo('discovery')}
+              stages={chapterStages}
+              davidMission={davidMission}
+              onPlay={playChapter}
               onBack={() => actions.goTo('journeys')}
             />
           ) : null}
 
-          {step === 'discovery' ? (
-            <DiscoveryScreen
-              onComplete={() => {
-                actions.completeDiscovery();
-                actions.goTo('preparation');
-              }}
+          {step === 'david-mission' && davidMission ? (
+            <DavidTrailScreen
+              mission={davidMission}
+              onSavePhaseData={(phase, data) => actions.updateDavidPhaseData(phase, data)}
+              onCompletePhase={(phase, points) =>
+                actions.completeDavidPhase(phase, points)
+              }
               onBack={() => actions.goTo('chapters')}
             />
-          ) : null}
-
-          {step === 'preparation' ? (
-            <PreparationScreen
-              onComplete={() => {
-                actions.completePreparation();
-                actions.goTo('ar');
-              }}
-              onBack={() => actions.goTo('discovery')}
-            />
-          ) : null}
-
-          {step === 'ar' ? (
-            <ArScreen
-              appearance={appearance}
-              onResult={(hit) => {
-                actions.recordArResult(hit);
-                if (hit) actions.goTo('quiz');
-              }}
-              onBack={() => actions.goTo('preparation')}
-            />
-          ) : null}
-
-          {step === 'quiz' ? (
-            <QuizScreen onAnswer={(id, correct) => actions.answerQuiz(id, correct)} onComplete={finishMission} />
           ) : null}
 
           {step === 'result' ? (
@@ -157,6 +168,8 @@ function Experience() {
               score={score}
               rewards={rewards}
               consistency={consistency}
+              davidMission={davidMission}
+              onReplay={() => actions.startDavidMission()}
               onShelf={() => actions.goTo('profile')}
               onJourneys={() => actions.goTo('journeys')}
             />
@@ -168,6 +181,8 @@ function Experience() {
               score={score}
               rewards={rewards}
               consistency={consistency}
+              stories={stories}
+              genericTone={!personalized}
               onBack={() => actions.goTo('journeys')}
               onReset={() => actions.resetDemo()}
             />
@@ -177,8 +192,9 @@ function Experience() {
 
       <ParakletosGuide
         open={guideOpen}
-        stageId="trial"
+        stageId={parakletosStageFor(step, calibrating, davidMission?.currentPhase)}
         profile={personalization?.profile ?? null}
+        personalized={personalized}
         onClose={() => setGuideOpen(false)}
       />
     </main>

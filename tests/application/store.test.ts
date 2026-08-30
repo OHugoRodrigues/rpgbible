@@ -59,4 +59,14 @@ describe('demo store', () => {
     );
     expect(store.getState().minigameProgress.materials.gemstone).toBe(1);
   });
+
+  it('lets the textual path complete AR without the duel screen', () => {
+    const now = '2026-08-29T12:00:00.000Z';
+    const store = createDemoStore({ now: () => now });
+    store.getState().completeDiscovery();
+    store.getState().completePreparation();
+    store.getState().completeArByNarrative();
+    expect(store.getState().stageResults.ar?.completed).toBe(true);
+    expect(store.getState().stageResults.ar?.points).toBe(30);
+  });
 });

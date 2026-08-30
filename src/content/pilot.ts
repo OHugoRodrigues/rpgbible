@@ -12,7 +12,14 @@ export const PILOT_JOURNEYS: readonly Journey[] = [
 export const DAVID_CHAPTERS: readonly Chapter[] = [
   { id: 'escolhido', order: 1, name: 'O Escolhido', summary: 'Samuel procura o futuro rei.', playable: false },
   { id: 'pastor', order: 2, name: 'O Pastor', summary: 'Davi aprende enquanto cuida das ovelhas.', playable: false },
-  { id: 'provacao', order: 3, name: 'A Provação', summary: 'Davi enfrenta Golias com fé e coragem.', playable: true },
+  {
+    id: 'provacao',
+    order: 3,
+    name: 'Trilha 1 — O Guerreiro',
+    summary:
+      'Da missão de Jessé ao desafio final do Parakletos, em quatro fases.',
+    playable: true,
+  },
   { id: 'rei', order: 4, name: 'O Rei', summary: 'Ascensão, liderança e decisões.', playable: false },
   { id: 'legado', order: 5, name: 'O Legado', summary: 'Consequências e impacto de sua história.', playable: false },
 ] as const;

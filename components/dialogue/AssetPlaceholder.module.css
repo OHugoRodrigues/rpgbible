@@ -1,0 +1,37 @@
+.placeholder {
+  display: inline-grid;
+  place-items: center;
+  width: 112px;
+  height: 136px;
+  overflow: hidden;
+  image-rendering: pixelated;
+  filter: drop-shadow(5px 6px 0 rgb(20 14 25 / 45%));
+}
+
+.image,
+.fallback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  image-rendering: pixelated;
+}
+
+.fallback {
+  stroke: #281c31;
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.dove .fallback {
+  fill: #fff9df;
+}
+
+.jesse .fallback {
+  fill: #8e5235;
+}
+
+.goliath .fallback {
+  fill: #6b7657;
+}

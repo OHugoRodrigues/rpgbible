@@ -1,6 +1,8 @@
 'use client';
 
 import type { PilgrimAppearance } from '@/src/domain/types';
+import { useState } from 'react';
+import styles from './Screens.module.css';
 
 /**
  * Variantes de sprite que existem de fato em `public/assets/characters/`.
@@ -27,6 +29,20 @@ export function PilgrimSprite({
   const base = appearance.outfit === 'blue' ? `pilgrim-royal-${sex}` : `pilgrim-${sex}`;
   const withHair = `${base}-${appearance.hair}`;
   const name = AVAILABLE_VARIANTS.has(withHair) ? withHair : base;
+  const [failed, setFailed] = useState(false);
 
-  return <img className={className} src={`/assets/characters/${name}.png`} alt={alt} />;
+  if (failed) {
+    return (
+      <span className={`${styles.pilgrimFallback} ${className ?? ''}`} role="img" aria-label={alt} />
+    );
+  }
+
+  return (
+    <img
+      className={className}
+      src={`/assets/characters/${name}.png`}
+      alt={alt}
+      onError={() => setFailed(true)}
+    />
+  );
 }

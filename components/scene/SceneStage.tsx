@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import styles from './SceneStage.module.css';
 
-export type SceneVariant = 'valley' | 'camp' | 'pasture';
+export type SceneVariant = 'valley' | 'camp' | 'pasture' | 'house' | 'brook';
 
 /**
  * Palco de cena em camadas.
@@ -34,7 +34,9 @@ export function SceneStage({
       aria-label={label}
     >
       <div className={`${styles.layer} ${styles.sky}`} />
-      {variant !== 'camp' ? <div className={`${styles.layer} ${styles.ridgeFar}`} /> : null}
+      {variant !== 'camp' && variant !== 'house' ? (
+        <div className={`${styles.layer} ${styles.ridgeFar}`} />
+      ) : null}
       {variant === 'valley' ? (
         <>
           <span className={styles.sun} />

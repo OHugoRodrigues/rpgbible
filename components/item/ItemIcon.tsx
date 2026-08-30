@@ -165,6 +165,44 @@ function renderShape(itemId: string) {
           <circle cx="32" cy="59" r="4" fill={GOLD.mid} stroke={GOLD.dark} strokeWidth="1.5" />
         </>
       );
+    case 'courage-to-trust':
+      return (
+        <>
+          <path
+            d="M8 20l13 10 11-18 11 18 13-10-5 30H13z"
+            fill={GOLD.mid}
+            stroke={GOLD.dark}
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          <path d="M16 42h32" stroke={GOLD.light} strokeWidth="3" />
+          <circle cx="32" cy="34" r="5" fill="#8e3150" stroke="#5d2038" strokeWidth="2" />
+        </>
+      );
+    case 'harp-of-david':
+      return (
+        <>
+          <path d="M17 54V14c18 2 29 12 31 40" fill="none" stroke={GOLD.mid} strokeWidth="6" strokeLinecap="round" />
+          <path d="M18 17h27M18 26h29M18 35h31M18 44h33" stroke={GOLD.light} strokeWidth="1.5" />
+          <path d="M13 54h42" stroke={LEATHER.dark} strokeWidth="6" strokeLinecap="round" />
+        </>
+      );
+    case 'baked-bread':
+      return (
+        <>
+          <path d="M8 38c0-12 9-22 24-22s24 10 24 22v12H8z" fill="#d89342" stroke="#835023" strokeWidth="2.5" />
+          <path d="M20 23l5 9M31 18l4 11M43 22l-2 10" stroke="#f5c878" strokeWidth="3" strokeLinecap="round" />
+        </>
+      );
+    case 'thick-cheese':
+      return (
+        <>
+          <path d="M9 29l30-16 16 14v25H9z" fill="#f1c94b" stroke="#a36e18" strokeWidth="2.5" strokeLinejoin="round" />
+          <path d="M9 29h46" stroke="#fff09a" strokeWidth="2" />
+          <circle cx="40" cy="38" r="4" fill="#c38b24" />
+          <circle cx="24" cy="45" r="3" fill="#c38b24" />
+        </>
+      );
     default:
       return (
         <>

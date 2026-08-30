@@ -1,0 +1,130 @@
+.phase {
+  --ink: #f8e8bd;
+  width: min(100%, 38rem);
+  margin: auto;
+  padding: clamp(1rem, 4vw, 2rem);
+  color: var(--ink);
+  background:
+    linear-gradient(#28233aee, #171628f7),
+    repeating-linear-gradient(90deg, #5c3c25 0 3px, #372315 3px 6px);
+  border: 4px solid #d59b45;
+  box-shadow:
+    0 0 0 4px #39251b,
+    0 14px 0 #0d0c18;
+  image-rendering: pixelated;
+}
+.phase h2 {
+  margin: 0.25rem 0;
+  font: 800 clamp(1.6rem, 7vw, 2.5rem)/1 monospace;
+  color: #ffd66b;
+  text-shadow: 3px 3px #6f2d3e;
+}
+.phase p {
+  line-height: 1.5;
+}
+.eyebrow {
+  color: #f2b94b;
+  font: 700 0.75rem monospace;
+  letter-spacing: 0.12em;
+}
+.goals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.goals > span {
+  padding: 0.45rem 0.7rem;
+  background: #11101d;
+  border: 2px solid #665477;
+  font: 700 0.8rem monospace;
+}
+.goals .ready {
+  color: #aef58d;
+  border-color: #79c85b;
+}
+.recipes {
+  padding: 0.55rem;
+  color: #f8e8bd;
+  background: #11101d;
+  border: 2px solid #665477;
+  font: 700 0.68rem/1.5 monospace;
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
+  touch-action: none;
+}
+.cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.2rem;
+  color: var(--ink);
+  background: #25243a;
+  border: 3px solid #5f597b;
+  box-shadow:
+    inset -4px -4px #161522,
+    inset 4px 4px #393754;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cell:hover,
+.cell:focus-visible {
+  outline: 3px solid #fff1a8;
+  outline-offset: 1px;
+}
+.cell.selected {
+  border-color: #ffd55f;
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+}
+.cell b {
+  font-size: clamp(1.2rem, 7vw, 2.2rem);
+  filter: saturate(0.8);
+}
+.cell small {
+  overflow: hidden;
+  font: 700 clamp(0.48rem, 2.2vw, 0.7rem) monospace;
+  text-overflow: ellipsis;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.actions button {
+  min-height: 44px;
+  padding: 0.5rem 0.7rem;
+  color: #fff4ce;
+  background: #503152;
+  border: 2px solid #d59b45;
+  font: 700 0.68rem monospace;
+}
+.actions button:disabled {
+  opacity: 0.45;
+}
+.status {
+  min-height: 1.5rem;
+  margin: 0.9rem 0 0;
+  color: #ffd66b;
+  font: 700 0.8rem monospace;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cell {
+    transition:
+      transform 120ms,
+      filter 120ms;
+  }
+  .ready {
+    animation: pulse 1.2s steps(2) infinite;
+  }
+}
+@keyframes pulse {
+  50% {
+    filter: brightness(1.45);
+  }
+}

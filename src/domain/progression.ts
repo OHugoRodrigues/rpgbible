@@ -6,7 +6,15 @@ import type {
   WeeklyConsistency,
 } from '@/src/domain/types';
 
-const WEEK: readonly Weekday[] = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const WEEK: readonly Weekday[] = [
+  'mon',
+  'tue',
+  'wed',
+  'thu',
+  'fri',
+  'sat',
+  'sun',
+];
 const TIER_ORDER: readonly RewardTier[] = ['common', 'rare', 'epic'];
 
 /** Meta semanal da spec §7: 4 dias edificam, 7 dias completam a semana. */
@@ -14,12 +22,20 @@ export const WEEKLY_GOAL_DAYS = 4;
 export const WEEK_LENGTH = 7;
 
 export function createSeededConsistency(): WeeklyConsistency {
-  return { activeDays: ['mon', 'tue', 'wed'], goalReached: false, completeWeek: false };
+  return {
+    activeDays: ['mon', 'tue', 'wed'],
+    goalReached: false,
+    completeWeek: false,
+  };
 }
 
-export function registerMeaningfulSession(consistency: WeeklyConsistency): WeeklyConsistency {
+export function registerMeaningfulSession(
+  consistency: WeeklyConsistency,
+): WeeklyConsistency {
   const nextDay = WEEK.find((day) => !consistency.activeDays.includes(day));
-  const activeDays = nextDay ? [...consistency.activeDays, nextDay] : [...consistency.activeDays];
+  const activeDays = nextDay
+    ? [...consistency.activeDays, nextDay]
+    : [...consistency.activeDays];
   return {
     activeDays,
     goalReached: activeDays.length >= WEEKLY_GOAL_DAYS,
@@ -35,7 +51,10 @@ export function registerMeaningfulSession(consistency: WeeklyConsistency): Weekl
  * Peregrino e sobe de qualidade por desempenho e constância. A semana completa
  * (7/7) leva o equipamento ao topo — nunca punindo semanas incompletas.
  */
-export function deriveRewards(score: MissionScore, consistency: WeeklyConsistency): Reward[] {
+export function deriveRewards(
+  score: MissionScore,
+  consistency: WeeklyConsistency,
+): Reward[] {
   return [
     {
       id: 'stone-of-david',
@@ -56,6 +75,23 @@ export function deriveRewards(score: MissionScore, consistency: WeeklyConsistenc
   ];
 }
 
+export function deriveDavidMissionRewards(
+  score: MissionScore,
+  consistency: WeeklyConsistency,
+): Reward[] {
+  return [
+    ...deriveRewards(score, consistency),
+    {
+      id: 'courage-to-trust',
+      kind: 'achievement',
+      name: 'CORAGEM PARA CONFIAR',
+      tier: 'epic',
+      source: 'Davi — A coragem de confiar',
+      biblicalReference: '1 Samuel 17:45-50',
+    },
+  ];
+}
+
 /** 7/7 garante o topo; 4/7 garante ao menos `rare`; abaixo disso vale o desempenho. */
 export function equipmentTier(
   scoreTier: RewardTier,
@@ -67,5 +103,7 @@ export function equipmentTier(
 }
 
 function maxTier(left: RewardTier, right: RewardTier): RewardTier {
-  return TIER_ORDER[Math.max(TIER_ORDER.indexOf(left), TIER_ORDER.indexOf(right))];
+  return TIER_ORDER[
+    Math.max(TIER_ORDER.indexOf(left), TIER_ORDER.indexOf(right))
+  ];
 }

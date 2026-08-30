@@ -1,0 +1,204 @@
+.phase {
+  width: min(100%, 48rem);
+  margin: auto;
+  padding: clamp(1rem, 4vw, 1.6rem);
+  color: #fff2ca;
+  background: #17152b;
+  border: 4px solid #c28c42;
+  box-shadow: 0 9px 0 #090812;
+  font-family: var(--font-pixel, "Courier New", monospace);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 0.8rem;
+  align-items: center;
+  padding-bottom: 0.8rem;
+  border-bottom: 3px solid #5b4568;
+}
+
+.avatar {
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.header span,
+.counter {
+  color: #efb950;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.header h2 {
+  margin: 0.2rem 0 0;
+  color: #ffe278;
+  font-size: clamp(1.3rem, 5vw, 2rem);
+  text-shadow: 3px 3px #682d3d;
+}
+
+.question {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: clamp(0.8rem, 3vw, 1.2rem);
+  background: #0d1020;
+  border: 3px solid #6d5a79;
+}
+
+.question h3 {
+  margin: 0;
+  color: #fff0b3;
+  line-height: 1.45;
+}
+
+.question p {
+  margin: 0;
+  color: #cfc4d8;
+  font: 700 0.78rem/1.5 system-ui, sans-serif;
+}
+
+.optionGrid,
+.numberGrid,
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.numberGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.optionGrid button,
+.numberGrid button,
+.choiceGrid button,
+.confirm,
+.failure button,
+.success button,
+.orderButtons button {
+  min-height: 46px;
+  padding: 0.65rem;
+  color: #fff0c6;
+  background: #352642;
+  border: 3px solid #826b92;
+  box-shadow: inset -3px -3px #1b1323;
+  font: 800 0.72rem/1.35 var(--font-pixel, "Courier New", monospace);
+}
+
+.optionGrid .selected {
+  color: #17251b;
+  background: #91d177;
+  border-color: #dcf6a3;
+}
+
+.confirm,
+.failure button,
+.success button {
+  width: 100%;
+  background: #71452c;
+  border-color: #e2ac4d;
+}
+
+.storyList {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.storyList li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 54px;
+  padding: 0.55rem;
+  color: #fff0c6;
+  background: #2a253a;
+  border: 2px solid #7f6b8f;
+  cursor: grab;
+}
+
+.cardHandle {
+  min-height: 42px;
+  padding: 0.45rem;
+  color: #fff0c6;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font: 800 0.72rem/1.35 var(--font-pixel, "Courier New", monospace);
+  cursor: grab;
+}
+
+.orderButtons {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.orderButtons button {
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0.35rem;
+}
+
+.failure,
+.success {
+  display: grid;
+  place-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  text-align: center;
+  background: #321621;
+  border: 3px solid #dc655b;
+}
+
+.success {
+  color: #ffe477;
+  background: radial-gradient(circle, #684320, #25182f 68%);
+  border-color: #e1b04e;
+}
+
+.success > span {
+  font-size: 4rem;
+}
+
+.success h3,
+.success p {
+  margin: 0;
+}
+
+.restartRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.8rem;
+}
+
+.feedback {
+  min-height: 1.4rem;
+  color: #ffd66b;
+  font-weight: 800;
+}
+
+@media (max-width: 520px) {
+  .header {
+    grid-template-columns: 58px 1fr;
+  }
+
+  .header > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .optionGrid,
+  .choiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .numberGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

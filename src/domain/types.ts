@@ -1,6 +1,6 @@
 import type { MinigameProgress } from '@/src/games/types';
 
-export const DEMO_SCHEMA_VERSION = 2 as const;
+export const DEMO_SCHEMA_VERSION = 4 as const;
 
 export type JourneyId =
   | 'davi'
@@ -34,10 +34,46 @@ export type DemoStep =
   | 'chapters'
   | 'discovery'
   | 'preparation'
+  | 'minigame'
   | 'ar'
   | 'quiz'
+  | 'david-mission'
   | 'result'
   | 'profile';
+
+export const DAVID_MISSION_PHASES = [
+  'supplies-merge',
+  'brook-skyfall',
+  'david-goliath',
+  'parakletos-challenge',
+] as const;
+
+export type DavidMissionPhaseId = (typeof DAVID_MISSION_PHASES)[number];
+export type DavidPhaseId = DavidMissionPhaseId;
+
+export type SerializableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | SerializableValue[]
+  | { [key: string]: SerializableValue };
+
+export interface DavidPhaseResult {
+  phase: DavidMissionPhaseId;
+  completed: boolean;
+  points: number;
+  completedAt: string | null;
+}
+
+export interface DavidMissionState {
+  currentPhase: DavidMissionPhaseId;
+  completedPhases: DavidMissionPhaseId[];
+  phaseResults: Partial<Record<DavidMissionPhaseId, DavidPhaseResult>>;
+  phaseData: Partial<Record<DavidMissionPhaseId, SerializableValue>>;
+  completed: boolean;
+  completedAt: string | null;
+}
 
 export interface Journey {
   id: JourneyId;
@@ -135,7 +171,15 @@ export type CollectibleId =
   | 'crown-of-david'
   | 'scroll-of-samuel';
 
-export type EquipmentSlot = 'head' | 'chest' | 'hand' | 'waist' | 'feet' | 'weapon';
+export type AchievementId = 'courage-to-trust';
+
+export type EquipmentSlot =
+  | 'head'
+  | 'chest'
+  | 'hand'
+  | 'waist'
+  | 'feet'
+  | 'weapon';
 
 export type EquipmentId =
   | 'helmet-of-salvation'
@@ -146,8 +190,8 @@ export type EquipmentId =
   | 'sword-of-the-spirit';
 
 export interface Reward {
-  id: CollectibleId | EquipmentId;
-  kind: 'collectible' | 'equipment';
+  id: CollectibleId | EquipmentId | AchievementId;
+  kind: 'collectible' | 'equipment' | 'achievement';
   name: string;
   tier: RewardTier;
   source: string;
@@ -165,6 +209,7 @@ export interface DemoState {
   appearance: PilgrimAppearance;
   personalization: JourneyPersonalization | null;
   minigameProgress: MinigameProgress;
+  davidMission?: DavidMissionState | null;
   currentStep: DemoStep;
   stageResults: Partial<Record<MissionStage, StageResult>>;
   quizAnswers: Record<string, QuizAnswerState>;

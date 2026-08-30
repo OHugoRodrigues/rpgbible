@@ -13,13 +13,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <meta name="theme-color" content="#0d0805" />
-        <link
-          rel="preload"
-          href="/fonts/cinzel-var-latin.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
       </head>
       <body>{children}</body>
     </html>

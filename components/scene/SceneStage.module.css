@@ -110,6 +110,51 @@
   background: linear-gradient(#161208cc, #0d0a05);
 }
 
+/* --- Casa de Jessé ------------------------------------------------------- */
+
+.house .sky {
+  background:
+    linear-gradient(90deg, transparent 47%, #382318 47% 53%, transparent 53%),
+    linear-gradient(#6f4a2e 0 19%, #b88a57 20% 71%, #6c452b 72%);
+}
+
+.house .floor {
+  top: auto;
+  height: 29%;
+  background:
+    repeating-linear-gradient(90deg, #5b3925 0 36px, #49301f 36px 39px);
+}
+
+.house .foreground {
+  top: auto;
+  height: 10%;
+  background: #26170f;
+}
+
+/* --- Leito do riacho ----------------------------------------------------- */
+
+.brook .sky {
+  background: linear-gradient(#345d79 0%, #7f9d8b 48%, #6f7950 70%);
+}
+
+.brook .ridgeFar {
+  background: linear-gradient(#4f6b45, #33472f);
+  clip-path: polygon(0 100%, 0 60%, 18% 48%, 34% 60%, 51% 45%, 70% 61%, 88% 50%, 100% 59%, 100% 100%);
+}
+
+.brook .floor {
+  top: auto;
+  height: 40%;
+  background:
+    repeating-linear-gradient(170deg, #78a8bc 0 12px, #4c839f 13px 25px);
+}
+
+.brook .foreground {
+  top: auto;
+  height: 12%;
+  background: linear-gradient(#263920cc, #142310);
+}
+
 /* --- Campo do pastor ----------------------------------------------------- */
 
 .pasture .sky {

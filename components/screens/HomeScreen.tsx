@@ -2,6 +2,7 @@
 
 import { GoldButton } from '@/components/frame';
 import { ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 import styles from './Screens.module.css';
 
 /** US01 — entrar sem cadastro, em poucas interações. */
@@ -12,9 +13,17 @@ export function HomeScreen({
   onStart: () => void;
   onContinue?: () => void;
 }) {
+  const [coverFailed, setCoverFailed] = useState(false);
   return (
     <section className={styles.home}>
-      <img className={styles.homeCover} src="/assets/brand/rpg-bible-cover.png" alt="" />
+      {coverFailed ? null : (
+        <img
+          className={styles.homeCover}
+          src="/assets/brand/rpg-bible-cover.png"
+          alt=""
+          onError={() => setCoverFailed(true)}
+        />
+      )}
       <div className={styles.homeShade} />
 
       <div className={styles.homeCopy}>

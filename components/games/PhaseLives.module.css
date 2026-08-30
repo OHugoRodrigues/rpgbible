@@ -1,0 +1,14 @@
+.lives {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #ff6b72;
+  font: 800 0.8rem/1 monospace;
+  letter-spacing: 0.08em;
+}
+
+.label {
+  color: inherit;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}

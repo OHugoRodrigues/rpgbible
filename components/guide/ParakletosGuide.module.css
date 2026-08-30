@@ -80,6 +80,40 @@
   line-height: 1.5;
 }
 
+.genericNotice {
+  margin: 0;
+  max-width: 48ch;
+  color: var(--gold-200);
+  font-size: var(--size-2xs);
+}
+
+.ask {
+  display: grid;
+  gap: var(--space-2);
+  width: min(100%, 48ch);
+  margin-top: var(--space-2);
+}
+
+.ask label {
+  color: var(--ice-200);
+  font-size: var(--size-2xs);
+  text-align: left;
+}
+
+.ask input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--radius-sm);
+  background: #0d0805a6;
+  color: var(--paper-200);
+}
+
+.hudMark {
+  width: 28px;
+  height: 28px;
+}
+
 /* Um <dialog> fechado é display:none pelo estilo do agente; declarar `display`
    na regra base sobrescreveria isso e deixaria o overlay sempre visível. */
 .overlay:not([open]) {

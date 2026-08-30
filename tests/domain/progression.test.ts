@@ -1,4 +1,11 @@
-import { WEEKLY_GOAL_DAYS, createSeededConsistency, deriveRewards, equipmentTier, registerMeaningfulSession } from '@/src/domain/progression';
+import {
+  WEEKLY_GOAL_DAYS,
+  createSeededConsistency,
+  deriveDavidMissionRewards,
+  deriveRewards,
+  equipmentTier,
+  registerMeaningfulSession,
+} from '@/src/domain/progression';
 import type { MissionScore, WeeklyConsistency } from '@/src/domain/types';
 import { describe, expect, it } from 'vitest';
 
@@ -37,7 +44,8 @@ describe('constância semanal', () => {
 
   it('não passa de sete dias nem regride ao repetir a sessão', () => {
     let consistency = createSeededConsistency();
-    for (let index = 0; index < 10; index += 1) consistency = registerMeaningfulSession(consistency);
+    for (let index = 0; index < 10; index += 1)
+      consistency = registerMeaningfulSession(consistency);
     expect(consistency.activeDays).toHaveLength(7);
     expect(consistency.completeWeek).toBe(true);
   });
@@ -64,7 +72,10 @@ describe('qualidade do equipamento', () => {
 describe('recompensas da missão', () => {
   it('entrega uma memória da história e uma evolução do Peregrino', () => {
     const rewards = deriveRewards(score('rare'), consistencyWith(4));
-    expect(rewards.map((reward) => reward.kind)).toEqual(['collectible', 'equipment']);
+    expect(rewards.map((reward) => reward.kind)).toEqual([
+      'collectible',
+      'equipment',
+    ]);
     expect(rewards[0].tier).toBe('common');
   });
 
@@ -73,5 +84,19 @@ describe('recompensas da missão', () => {
     const strong = deriveRewards(score('epic'), consistencyWith(7));
     expect(weak[0].tier).toBe(strong[0].tier);
     expect(weak[1].tier).not.toBe(strong[1].tier);
+  });
+
+  it('inclui a conquista Coragem para Confiar ao concluir a trilha', () => {
+    const rewards = deriveDavidMissionRewards(
+      score('epic'),
+      consistencyWith(4),
+    );
+    expect(rewards).toContainEqual(
+      expect.objectContaining({
+        id: 'courage-to-trust',
+        kind: 'achievement',
+        name: 'CORAGEM PARA CONFIAR',
+      }),
+    );
   });
 });

@@ -1,4 +1,5 @@
 import type { ArMissionAdapter, ThrowResult } from '@/src/ar/ar-mission-adapter';
+import { isStoneAimHit, nextStoneAim } from '@/src/ar/aim';
 import { goliathDataUri } from '@/components/art/goliath';
 import type * as Three from 'three';
 
@@ -21,6 +22,9 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
   private placed = false;
   private initialized = false;
   private defeated = false;
+  private aim = 8;
+  private aimDirection: 1 | -1 = 1;
+  private throwing = false;
 
   async isSupported(): Promise<boolean> {
     if (typeof navigator === 'undefined') return false;
@@ -66,13 +70,19 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.placed = true;
   }
 
+  getAim(): number {
+    return this.aim;
+  }
+
   /**
-   * Lança a pedra em arco, com rastro, e faz Golias reagir ao impacto.
-   * O acerto vibra o controle quando o aparelho oferece atuador háptico.
+   * Lança a pedra em arco. O acerto depende da mira (mesma zona dourada do DOM).
+   * O impacto vibra o controle quando o aparelho oferece atuador háptico.
    */
   async throwStone(): Promise<ThrowResult> {
     if (!this.placed || !this.missionGroup || !this.goliath || this.defeated) return 'miss';
     const THREE = await import('three');
+    const hit = isStoneAimHit(this.aim);
+    this.throwing = true;
 
     const stone = new THREE.Mesh(
       new THREE.SphereGeometry(0.03, 12, 12),
@@ -82,7 +92,9 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.missionGroup.add(stone, trail);
 
     const from = new THREE.Vector3(-0.42, 0.42, 0.05);
-    const to = new THREE.Vector3(0.4, 0.78, 0);
+    const to = hit
+      ? new THREE.Vector3(0.4, 0.78, 0)
+      : new THREE.Vector3(0.92, 1.05, -0.22);
     const duration = 620;
     const start = performance.now();
 
@@ -106,6 +118,9 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     (stone.material as Three.Material).dispose();
     trail.geometry.dispose();
     (trail.material as Three.Material).dispose();
+    this.throwing = false;
+
+    if (!hit) return 'miss';
 
     this.defeated = true;
     this.pulseHaptics();
@@ -134,6 +149,9 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
     this.placed = false;
     this.initialized = false;
     this.defeated = false;
+    this.aim = 8;
+    this.aimDirection = 1;
+    this.throwing = false;
   }
 
   private async setupRenderer(container: HTMLElement): Promise<void> {
@@ -178,6 +196,11 @@ export class WebXrMissionAdapter implements ArMissionAdapter {
           const pose = hit.getPose(this.referenceSpace);
           if (pose) this.reticle!.matrix.fromArray(pose.transform.matrix);
         }
+      }
+      if (this.placed && !this.defeated && !this.throwing) {
+        const next = nextStoneAim(this.aim, this.aimDirection);
+        this.aim = next.aim;
+        this.aimDirection = next.direction;
       }
       this.renderer!.render(this.scene!, this.camera!);
     });

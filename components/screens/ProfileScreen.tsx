@@ -4,7 +4,7 @@ import { Cartouche, GhostButton, GoldFrame, Overline, ScrollPanel } from '@/comp
 import { ItemIcon } from '@/components/item/ItemIcon';
 import { COLLECTIBLES, EQUIPMENT } from '@/src/content/rewards';
 import { WEEKLY_GOAL_DAYS } from '@/src/domain/progression';
-import type { MissionScore, PilgrimAppearance, Reward, RewardTier, WeeklyConsistency } from '@/src/domain/types';
+import type { MissionScore, PilgrimAppearance, Reward, RewardTier, StoryRecommendation, WeeklyConsistency } from '@/src/domain/types';
 import { ChevronLeft, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { PilgrimSprite } from './PilgrimSprite';
@@ -42,6 +42,8 @@ export function ProfileScreen({
   score,
   rewards,
   consistency,
+  stories = [],
+  genericTone = false,
   onBack,
   onReset,
 }: {
@@ -49,6 +51,8 @@ export function ProfileScreen({
   score: MissionScore;
   rewards: readonly Reward[];
   consistency: WeeklyConsistency;
+  stories?: readonly StoryRecommendation[];
+  genericTone?: boolean;
   onBack: () => void;
   onReset: () => void;
 }) {
@@ -67,6 +71,7 @@ export function ProfileScreen({
   const equipmentTier = new Map(
     rewards.filter((reward) => reward.kind === 'equipment').map((reward) => [reward.id, reward.tier]),
   );
+  const achievements = rewards.filter((reward) => reward.kind === 'achievement');
   const ownedCollectibles = COLLECTIBLES.filter((item) => ownedIds.has(item.id)).length;
 
   return (
@@ -89,8 +94,51 @@ export function ProfileScreen({
           <span className={styles.rewardMeta}>
             {ownedCollectibles} de {COLLECTIBLES.length} colecionáveis · {ownedIds.size > 0 ? 'em jornada' : 'início da caminhada'}
           </span>
+          {genericTone ? (
+            <span className={styles.rewardMeta}>Calibração pulada — recomendações e guia usam um tom geral.</span>
+          ) : null}
         </div>
       </GoldFrame>
+
+      {achievements.length > 0 ? (
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2>Conquistas</h2>
+            <span className={styles.sectionCount}>{achievements.length}</span>
+          </div>
+          <ul className={styles.storyList}>
+            {achievements.map((achievement) => (
+              <li key={achievement.id}>
+                <GoldFrame tight>
+                  <strong>{achievement.name}</strong>
+                  <p>{achievement.source}</p>
+                  <span className={styles.rewardMeta}>{achievement.biblicalReference}</span>
+                </GoldFrame>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {stories.length > 0 ? (
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <h2>Histórias para continuar</h2>
+            <span className={styles.sectionCount}>{stories.length}</span>
+          </div>
+          <ul className={styles.storyList}>
+            {stories.map((story) => (
+              <li key={story.id}>
+                <GoldFrame tight>
+                  <strong>{story.title}</strong>
+                  <p>{story.summary}</p>
+                  <span className={styles.rewardMeta}>{story.biblicalReferences.join(' · ')}</span>
+                </GoldFrame>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Constância — edificação, nunca punição (spec §7) */}
       <GoldFrame innerClassName={styles.weekCard}>

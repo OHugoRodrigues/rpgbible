@@ -37,9 +37,11 @@ const CORRECT_COUNT = PREPARATION_ITEMS.filter((item) => item.correct).length;
 export function PreparationScreen({
   onComplete,
   onBack,
+  narrativeOnly = false,
 }: {
   onComplete: () => void;
   onBack: () => void;
+  narrativeOnly?: boolean;
 }) {
   const [chosen, setChosen] = useState<string[]>([]);
   const [rejected, setRejected] = useState<string[]>([]);
@@ -81,6 +83,9 @@ export function PreparationScreen({
           <p className={styles.screenIntro}>
             Escolha o que Davi levou para enfrentar Golias. Três itens — e nenhum deles foi
             emprestado.
+            {narrativeOnly
+              ? ' Nesta trilha o confronto é pela leitura: o vale já está na passagem, sem o duelo em AR.'
+              : ''}
           </p>
         </div>
       </header>
@@ -144,7 +149,11 @@ export function PreparationScreen({
 
       <div className={styles.screenActions}>
         <GoldButton disabled={!ready} onClick={onComplete}>
-          {ready ? 'Descer ao vale' : `Escolha ${CORRECT_COUNT} itens`}
+          {ready
+            ? narrativeOnly
+              ? 'Seguir pela leitura'
+              : 'Descer ao vale'
+            : `Escolha ${CORRECT_COUNT} itens`}
         </GoldButton>
       </div>
     </section>
