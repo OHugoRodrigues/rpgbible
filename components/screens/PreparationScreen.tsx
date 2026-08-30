@@ -18,12 +18,12 @@ const ART: Record<string, string> = {
 };
 
 const VECTOR_ID: Record<string, string> = {
-  staff: 'default',
+  staff: 'shepherd-staff',
   sling: 'sling-of-david',
-  stones: 'default',
+  stones: 'stone-of-david',
   armor: 'breastplate-of-righteousness',
   sword: 'sword-of-the-spirit',
-  shield: 'default',
+  shield: 'shield-of-faith',
 };
 
 const CORRECT_COUNT = PREPARATION_ITEMS.filter((item) => item.correct).length;

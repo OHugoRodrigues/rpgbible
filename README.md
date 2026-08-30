@@ -28,17 +28,19 @@ comunicar o universo maior. Dentro de Davi, "A Provação" é o capítulo jogáv
 
 ## Arte substituível
 
-A interface desenha as cenas e os ícones que ainda não têm arte final, sempre atrás de um caminho de
-arquivo. Soltar o PNG no lugar esperado substitui o desenho sem tocar em código:
+Os itens e recompensas usam a pixel art recortada das folhas de `ref/` pelo script
+descrito abaixo. O que ainda não tem arte final é desenhado em vetor ou em CSS, sempre atrás de um
+caminho de arquivo: soltar o PNG no lugar esperado substitui o desenho sem tocar em código.
 
-| Caminho | Substitui |
+| Caminho | Estado |
 |---|---|
-| `public/assets/scenes/valley.png` | Vale de Elá desenhado em CSS |
-| `public/assets/scenes/camp.png` | Acampamento |
-| `public/assets/scenes/pasture.png` | Campo do pastor |
-| `public/assets/characters/goliath.png` | Golias (SVG compartilhado por DOM e AR) |
-| `public/assets/characters/pilgrim-{male,female}-{short,long}.png` | Variantes de cabelo do Peregrino |
-| `public/assets/items/{sling,scroll,helmet,breastplate,belt,shoes,sword}.png` | Ícones vetoriais dos itens |
+| `public/assets/items/*.png` | Recortados de `ref/` (coroa, harpa, pedra, funda, escudo, capacete, cinturão, couraça, calçados, espada) |
+| `public/assets/rewards/*.png` | Recortados de `ref/` (palha, capim, madeira, prata, ouro, gemas) |
+| `public/assets/items/scroll.png` | **Falta** — Pergaminho de Samuel, hoje em vetor |
+| `public/assets/items/staff.png` | **Falta** — Cajado do pastor, hoje em vetor |
+| `public/assets/scenes/{valley,camp,pasture}.png` | **Falta** — cenas desenhadas em CSS |
+| `public/assets/characters/goliath.png` | **Falta** — Golias em SVG compartilhado por DOM e AR |
+| `public/assets/characters/pilgrim-{male,female}-{short,long}.png` | **Falta** — variantes de cabelo; ao adicioná-las, registre o nome em `AVAILABLE_VARIANTS` em `components/screens/PilgrimSprite.tsx` |
 
 ## Documentação
 

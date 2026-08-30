@@ -134,6 +134,27 @@ function renderShape(itemId: string) {
           <path d="M46 18c6 2 9 7 8 13" fill="none" stroke={GOLD.mid} strokeWidth="2.4" strokeLinecap="round" />
         </>
       );
+    case 'shepherd-staff':
+      return (
+        <>
+          <path
+            d="M30 62V26c0-9 6-15 13-15s11 5 11 11-4 10-9 10-7-3-7-6"
+            fill="none"
+            stroke={LEATHER.mid}
+            strokeWidth="7"
+            strokeLinecap="round"
+          />
+          <path
+            d="M30 62V26c0-9 6-15 13-15s11 5 11 11-4 10-9 10-7-3-7-6"
+            fill="none"
+            stroke={LEATHER.light}
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            opacity=".5"
+          />
+          <rect x="26" y="40" width="8" height="4" rx="2" fill={LEATHER.dark} stroke="none" />
+        </>
+      );
     case 'sword-of-the-spirit':
       return (
         <>
